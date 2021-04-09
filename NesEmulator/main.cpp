@@ -10,5 +10,6 @@ int main()
 	file.open(R"(H:\Emulators\NES\Roms\Super_mario_brothers.nes)", std::ios::in | std::ios::binary | std::ios::ate);
 
 	nes.loadCartridge(file);
+	nes.reset();
 	return 0;
 }

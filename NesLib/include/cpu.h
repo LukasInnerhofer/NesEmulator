@@ -17,6 +17,7 @@ class Cpu
 public:
 	Cpu(const std::shared_ptr<Mapper>& mapper, const std::shared_ptr<Ppu>& ppu);
 
+	void reset();
 	void step();
 
 private:
@@ -33,21 +34,27 @@ private:
 	uint8_t m_x, m_y;
 
 	std::bitset<8> m_status;
-	enum class StatusBits { Carry = 0, Zero = 1, Interrupt = 3, Decimal = 4, Overflow = 6, Negative = 7 };
+	static class StatusBits
+	{
+	public:
+		static constexpr size_t Carry = 0, Zero = 1, Interrupt = 3, Decimal = 4, Overflow = 6, Negative = 7;
+	};
 
-	static constexpr uint16_t    pcDefault = 0;
-	static constexpr uint8_t     spDefault = 0xFD;
-	static constexpr uint8_t    accDefault = 0;
-	static constexpr uint8_t      xDefault = 0;
-	static constexpr uint8_t      yDefault = 0;
+	uint8_t m_cycles;
+
+	static constexpr uint16_t pcDefault = 0;
+	static constexpr uint8_t spDefault = 0xFD;
+	static constexpr uint8_t accDefault = 0;
+	static constexpr uint8_t xDefault = 0;
+	static constexpr uint8_t yDefault = 0;
 	static constexpr uint8_t statusDefault = 0x34;
 
 	static constexpr uint16_t nmiVector =	0xFFFA;
 	static constexpr uint16_t resetVector = 0xFFFC;
 	static constexpr uint16_t irqVector =	0xFFFE;
 
-	uint8_t read8 (const uint16_t& addr) const;
-	uint16_t read16(const uint16_t& addr) const;
+	uint8_t read8 (const uint16_t& addr);
+	uint16_t read16(const uint16_t& addr);
 	void write8(const uint16_t& addr, const uint8_t& data);
 
 	uint16_t readAddress();
@@ -139,42 +146,42 @@ private:
 		&Cpu::BEQ, &Cpu::SBC, &Cpu::ILL, &Cpu::ILL, &Cpu::ILL, &Cpu::SBC, &Cpu::INC, &Cpu::ILL, &Cpu::SED, &Cpu::SBC, &Cpu::ILL, &Cpu::ILL, &Cpu::ILL, &Cpu::SBC, &Cpu::INC, &Cpu::ILL 
 	};
 
-	enum class AddressMode { Acc, Imp, Rel, Imm, ZoP, ZpX, ZpY, Abs, AbX, AbY, Pre, Pos, Ill, Ind };
-	AddressMode m_addrMode;
-	const std::vector<AddressMode> m_addrModes
+	enum class AddrMd { Acc, Imp, Rel, Imm, ZoP, ZpX, ZpY, Abs, AbX, AbY, Pre, Pos, Ill, Ind };
+	AddrMd m_addrMode;
+	const std::vector<AddrMd> m_addrModes
 	{
-		AddressMode::Imp, AddressMode::Pre, AddressMode::Ill, AddressMode::Ill, AddressMode::Ill, AddressMode::ZoP, AddressMode::ZoP, AddressMode::Ill,	
-		AddressMode::Imp, AddressMode::Imm, AddressMode::Acc, AddressMode::Ill, AddressMode::Ill, AddressMode::Abs, AddressMode::Abs, AddressMode::Ill,
-		AddressMode::Rel, AddressMode::Pos, AddressMode::Ill, AddressMode::Ill, AddressMode::Ill, AddressMode::ZpX, AddressMode::ZpX, AddressMode::Ill, 
-		AddressMode::Imp, AddressMode::AbY, AddressMode::Ill, AddressMode::Ill, AddressMode::Ill, AddressMode::AbX, AddressMode::AbX, AddressMode::Ill,
-		AddressMode::Abs, AddressMode::Pre, AddressMode::Ill, AddressMode::Ill, AddressMode::ZoP, AddressMode::ZoP, AddressMode::ZoP, AddressMode::Ill, 
-		AddressMode::Imp, AddressMode::Imm, AddressMode::Acc, AddressMode::Ill, AddressMode::Abs, AddressMode::Abs, AddressMode::Abs, AddressMode::Ill,
-		AddressMode::Rel, AddressMode::Pos, AddressMode::Ill, AddressMode::Ill, AddressMode::Ill, AddressMode::ZpX, AddressMode::ZpX, AddressMode::Ill, 
-		AddressMode::Imp, AddressMode::AbY, AddressMode::Ill, AddressMode::Ill, AddressMode::Ill, AddressMode::AbX, AddressMode::AbX, AddressMode::Ill,
-		AddressMode::Imp, AddressMode::Pre, AddressMode::Ill, AddressMode::Ill, AddressMode::Ill, AddressMode::ZoP, AddressMode::ZoP, AddressMode::Ill, 
-		AddressMode::Imp, AddressMode::Imm, AddressMode::Acc, AddressMode::Ill, AddressMode::Abs, AddressMode::Abs, AddressMode::Abs, AddressMode::Ill,
-		AddressMode::Rel, AddressMode::Pos, AddressMode::Ill, AddressMode::Ill, AddressMode::Ill, AddressMode::ZpX, AddressMode::ZpX, AddressMode::Ill, 
-		AddressMode::Imp, AddressMode::AbY, AddressMode::Ill, AddressMode::Ill, AddressMode::Ill, AddressMode::AbX, AddressMode::AbX, AddressMode::Ill,
-		AddressMode::Imp, AddressMode::Pre, AddressMode::Ill, AddressMode::Ill, AddressMode::Ill, AddressMode::ZoP, AddressMode::ZoP, AddressMode::Ill, 
-		AddressMode::Imp, AddressMode::Imm, AddressMode::Acc, AddressMode::Ill, AddressMode::Ind, AddressMode::Abs, AddressMode::Abs, AddressMode::Ill,
-		AddressMode::Rel, AddressMode::Pos, AddressMode::Ill, AddressMode::Ill, AddressMode::Ill, AddressMode::ZpX, AddressMode::ZpX, AddressMode::Ill, 
-		AddressMode::Imp, AddressMode::AbY, AddressMode::Ill, AddressMode::Ill, AddressMode::Ill, AddressMode::AbX, AddressMode::AbX, AddressMode::Ill,
-		AddressMode::Ill, AddressMode::Pre, AddressMode::Ill, AddressMode::Ill, AddressMode::ZoP, AddressMode::ZoP, AddressMode::ZoP, AddressMode::Ill, 
-		AddressMode::Imp, AddressMode::Ill, AddressMode::Imp, AddressMode::Ill, AddressMode::Abs, AddressMode::Abs, AddressMode::Abs, AddressMode::Ill,
-		AddressMode::Rel, AddressMode::Pos, AddressMode::Ill, AddressMode::Ill, AddressMode::ZpX, AddressMode::ZpX, AddressMode::ZpY, AddressMode::Ill, 
-		AddressMode::Imp, AddressMode::AbY, AddressMode::Imp, AddressMode::Ill, AddressMode::Ill, AddressMode::AbX, AddressMode::Ill, AddressMode::Ill,
-		AddressMode::Imm, AddressMode::Pre, AddressMode::Imm, AddressMode::Ill, AddressMode::ZoP, AddressMode::ZoP, AddressMode::ZoP, AddressMode::Ill, 
-		AddressMode::Imp, AddressMode::Imm, AddressMode::Imp, AddressMode::Ill, AddressMode::Abs, AddressMode::Abs, AddressMode::Abs, AddressMode::Imm,
-		AddressMode::Rel, AddressMode::Pos, AddressMode::Ill, AddressMode::Ill, AddressMode::ZpX, AddressMode::ZpX, AddressMode::ZpY, AddressMode::Ill, 
-		AddressMode::Imp, AddressMode::AbY, AddressMode::Imp, AddressMode::Ill, AddressMode::AbX, AddressMode::AbX, AddressMode::AbY, AddressMode::Ill,
-		AddressMode::Imm, AddressMode::Pre, AddressMode::Ill, AddressMode::Ill, AddressMode::ZoP, AddressMode::ZoP, AddressMode::ZoP, AddressMode::Ill, 
-		AddressMode::Imp, AddressMode::Imm, AddressMode::Imp, AddressMode::Ill, AddressMode::Abs, AddressMode::Abs, AddressMode::Abs, AddressMode::Ill,
-		AddressMode::Rel, AddressMode::Pos, AddressMode::Ill, AddressMode::Ill, AddressMode::Ill, AddressMode::ZpX, AddressMode::ZpX, AddressMode::Ill, 
-		AddressMode::Imp, AddressMode::AbY, AddressMode::Ill, AddressMode::Ill, AddressMode::Ill, AddressMode::AbX, AddressMode::AbX, AddressMode::Ill,
-		AddressMode::Imm, AddressMode::Pre, AddressMode::Ill, AddressMode::Ill, AddressMode::ZoP, AddressMode::ZoP, AddressMode::ZoP, AddressMode::Ill, 
-		AddressMode::Imp, AddressMode::Imm, AddressMode::Imp, AddressMode::Ill, AddressMode::Abs, AddressMode::Abs, AddressMode::Abs, AddressMode::Ill,
-		AddressMode::Rel, AddressMode::Pos, AddressMode::Ill, AddressMode::Ill, AddressMode::Ill, AddressMode::ZpX, AddressMode::ZpX, AddressMode::Ill, 
-		AddressMode::Imp, AddressMode::AbY, AddressMode::Ill, AddressMode::Ill, AddressMode::Ill, AddressMode::AbX, AddressMode::AbX, AddressMode::Ill
+		AddrMd::Imp, AddrMd::Pre, AddrMd::Ill, AddrMd::Ill, AddrMd::Ill, AddrMd::ZoP, AddrMd::ZoP, AddrMd::Ill,	
+		AddrMd::Imp, AddrMd::Imm, AddrMd::Acc, AddrMd::Ill, AddrMd::Ill, AddrMd::Abs, AddrMd::Abs, AddrMd::Ill,
+		AddrMd::Rel, AddrMd::Pos, AddrMd::Ill, AddrMd::Ill, AddrMd::Ill, AddrMd::ZpX, AddrMd::ZpX, AddrMd::Ill, 
+		AddrMd::Imp, AddrMd::AbY, AddrMd::Ill, AddrMd::Ill, AddrMd::Ill, AddrMd::AbX, AddrMd::AbX, AddrMd::Ill,
+		AddrMd::Abs, AddrMd::Pre, AddrMd::Ill, AddrMd::Ill, AddrMd::ZoP, AddrMd::ZoP, AddrMd::ZoP, AddrMd::Ill, 
+		AddrMd::Imp, AddrMd::Imm, AddrMd::Acc, AddrMd::Ill, AddrMd::Abs, AddrMd::Abs, AddrMd::Abs, AddrMd::Ill,
+		AddrMd::Rel, AddrMd::Pos, AddrMd::Ill, AddrMd::Ill, AddrMd::Ill, AddrMd::ZpX, AddrMd::ZpX, AddrMd::Ill, 
+		AddrMd::Imp, AddrMd::AbY, AddrMd::Ill, AddrMd::Ill, AddrMd::Ill, AddrMd::AbX, AddrMd::AbX, AddrMd::Ill,
+		AddrMd::Imp, AddrMd::Pre, AddrMd::Ill, AddrMd::Ill, AddrMd::Ill, AddrMd::ZoP, AddrMd::ZoP, AddrMd::Ill, 
+		AddrMd::Imp, AddrMd::Imm, AddrMd::Acc, AddrMd::Ill, AddrMd::Abs, AddrMd::Abs, AddrMd::Abs, AddrMd::Ill,
+		AddrMd::Rel, AddrMd::Pos, AddrMd::Ill, AddrMd::Ill, AddrMd::Ill, AddrMd::ZpX, AddrMd::ZpX, AddrMd::Ill, 
+		AddrMd::Imp, AddrMd::AbY, AddrMd::Ill, AddrMd::Ill, AddrMd::Ill, AddrMd::AbX, AddrMd::AbX, AddrMd::Ill,
+		AddrMd::Imp, AddrMd::Pre, AddrMd::Ill, AddrMd::Ill, AddrMd::Ill, AddrMd::ZoP, AddrMd::ZoP, AddrMd::Ill, 
+		AddrMd::Imp, AddrMd::Imm, AddrMd::Acc, AddrMd::Ill, AddrMd::Ind, AddrMd::Abs, AddrMd::Abs, AddrMd::Ill,
+		AddrMd::Rel, AddrMd::Pos, AddrMd::Ill, AddrMd::Ill, AddrMd::Ill, AddrMd::ZpX, AddrMd::ZpX, AddrMd::Ill, 
+		AddrMd::Imp, AddrMd::AbY, AddrMd::Ill, AddrMd::Ill, AddrMd::Ill, AddrMd::AbX, AddrMd::AbX, AddrMd::Ill,
+		AddrMd::Ill, AddrMd::Pre, AddrMd::Ill, AddrMd::Ill, AddrMd::ZoP, AddrMd::ZoP, AddrMd::ZoP, AddrMd::Ill, 
+		AddrMd::Imp, AddrMd::Ill, AddrMd::Imp, AddrMd::Ill, AddrMd::Abs, AddrMd::Abs, AddrMd::Abs, AddrMd::Ill,
+		AddrMd::Rel, AddrMd::Pos, AddrMd::Ill, AddrMd::Ill, AddrMd::ZpX, AddrMd::ZpX, AddrMd::ZpY, AddrMd::Ill, 
+		AddrMd::Imp, AddrMd::AbY, AddrMd::Imp, AddrMd::Ill, AddrMd::Ill, AddrMd::AbX, AddrMd::Ill, AddrMd::Ill,
+		AddrMd::Imm, AddrMd::Pre, AddrMd::Imm, AddrMd::Ill, AddrMd::ZoP, AddrMd::ZoP, AddrMd::ZoP, AddrMd::Ill, 
+		AddrMd::Imp, AddrMd::Imm, AddrMd::Imp, AddrMd::Ill, AddrMd::Abs, AddrMd::Abs, AddrMd::Abs, AddrMd::Imm,
+		AddrMd::Rel, AddrMd::Pos, AddrMd::Ill, AddrMd::Ill, AddrMd::ZpX, AddrMd::ZpX, AddrMd::ZpY, AddrMd::Ill, 
+		AddrMd::Imp, AddrMd::AbY, AddrMd::Imp, AddrMd::Ill, AddrMd::AbX, AddrMd::AbX, AddrMd::AbY, AddrMd::Ill,
+		AddrMd::Imm, AddrMd::Pre, AddrMd::Ill, AddrMd::Ill, AddrMd::ZoP, AddrMd::ZoP, AddrMd::ZoP, AddrMd::Ill, 
+		AddrMd::Imp, AddrMd::Imm, AddrMd::Imp, AddrMd::Ill, AddrMd::Abs, AddrMd::Abs, AddrMd::Abs, AddrMd::Ill,
+		AddrMd::Rel, AddrMd::Pos, AddrMd::Ill, AddrMd::Ill, AddrMd::Ill, AddrMd::ZpX, AddrMd::ZpX, AddrMd::Ill, 
+		AddrMd::Imp, AddrMd::AbY, AddrMd::Ill, AddrMd::Ill, AddrMd::Ill, AddrMd::AbX, AddrMd::AbX, AddrMd::Ill,
+		AddrMd::Imm, AddrMd::Pre, AddrMd::Ill, AddrMd::Ill, AddrMd::ZoP, AddrMd::ZoP, AddrMd::ZoP, AddrMd::Ill, 
+		AddrMd::Imp, AddrMd::Imm, AddrMd::Imp, AddrMd::Ill, AddrMd::Abs, AddrMd::Abs, AddrMd::Abs, AddrMd::Ill,
+		AddrMd::Rel, AddrMd::Pos, AddrMd::Ill, AddrMd::Ill, AddrMd::Ill, AddrMd::ZpX, AddrMd::ZpX, AddrMd::Ill, 
+		AddrMd::Imp, AddrMd::AbY, AddrMd::Ill, AddrMd::Ill, AddrMd::Ill, AddrMd::AbX, AddrMd::AbX, AddrMd::Ill
 	};
 
 	const std::vector<uint8_t> m_pcIncs
@@ -197,7 +204,7 @@ private:
 		2, 2, 0, 0, 0, 2, 2, 0, 1, 3, 0, 0, 0, 3, 3, 0
 	};
 
-	const std::vector<uint8_t> m_cycles
+	/*const std::vector<uint8_t> m_cycles
 	{
 		7, 6, 0, 0, 0, 3, 5, 0, 3, 2, 2, 0, 0, 4, 6, 0,
 		2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,
@@ -215,7 +222,7 @@ private:
 		2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,
 		2, 6, 0, 0, 3, 3, 5, 0, 2, 2, 2, 0, 4, 4, 6, 0,
 		2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0
-	};
+	};*/
 
 	bool m_pageCrossed;
 	const std::vector<bool> m_addOnPageCross

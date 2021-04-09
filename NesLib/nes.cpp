@@ -77,6 +77,11 @@ void Nes::loadCartridge(std::istream& romStream)
 	m_cartridge.m_mapper = m_mapperList[mapperNumber](mirroring);
 }
 
+void Nes::reset()
+{
+	m_cpu->reset();
+}
+
 void Nes::step()
 {
 	m_cpu->step();

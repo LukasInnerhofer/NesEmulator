@@ -16,10 +16,11 @@
 class Nes
 {
 public:
+	Nes();
+
 	void loadCartridge(std::istream& romStream);
 	void step();
-
-	Nes();
+	void reset();
 
 private:
 	Cartridge m_cartridge;
