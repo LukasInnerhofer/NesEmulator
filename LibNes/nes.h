@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-#include "cpu.h"
+#include "mos6502.h"
 #include "ppu.h"
 #include "cartridge.h"
 #include "mapper.h"
@@ -23,14 +23,17 @@ public:
 	void reset();
 
 private:
+	std::shared_ptr<std::vector<uint8_t>> m_ram;
+	static constexpr size_t ramSize = 0x800;
+
 	Cartridge m_cartridge;
 	
-	const std::vector<std::function<std::shared_ptr<Mapper>(const Mapper::Mirroring& mirroring)>> m_mapperList =
+	const std::vector<std::function<std::unique_ptr<Mapper>(const Mapper::Mirroring& mirroring)>> m_mapperList =
 	{
-		[&](const Mapper::Mirroring& mirroring) { return std::make_shared<NRom>(m_cartridge.m_rom, mirroring); }
+		[&](const Mapper::Mirroring& mirroring) { return std::make_unique<NRom>(m_cartridge.m_rom, mirroring); }
 	};
 
-	std::unique_ptr<Cpu> m_cpu;
+	std::unique_ptr<LibMos6502::Mos6502> m_cpu;
 	std::shared_ptr<Ppu> m_ppu;
 };
 

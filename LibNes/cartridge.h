@@ -22,7 +22,7 @@ struct Cartridge
 	};
 
 	std::shared_ptr<Rom> m_rom;
-	std::shared_ptr<Mapper> m_mapper;
+	std::shared_ptr<std::unique_ptr<Mapper>> m_mapper = std::make_shared<std::unique_ptr<Mapper>>();
 };
 
 #endif // CARTRIDGE_H

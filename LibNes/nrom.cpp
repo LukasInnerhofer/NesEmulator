@@ -1,6 +1,6 @@
 #include "nrom.h"
 
-uint8_t NRom::read(const uint16_t& addr)
+uint8_t NRom::read(uint16_t addr)
 {
 	uint8_t data = 0;
 
@@ -30,7 +30,7 @@ uint8_t NRom::read(const uint16_t& addr)
 	return data;
 }
 
-void NRom::write(const uint16_t& addr, const uint8_t& data)
+void NRom::write(uint16_t addr, uint8_t data)
 {
 	
 }
