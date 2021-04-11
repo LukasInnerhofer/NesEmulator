@@ -1,15 +1,57 @@
 #include <fstream>
+#include <chrono>
+#include <thread>
+#include <iostream>
 
 #include "nes.h"
 
 int main()
 {
-	Nes nes;
+	std::cin.get();
 
-	std::ifstream file;
-	file.open(R"(H:\Emulators\NES\Roms\Super_mario_brothers.nes)", std::ios::in | std::ios::binary | std::ios::ate);
+	{
 
-	nes.loadCartridge(file);
-	nes.reset();
+		Nes nes;
+
+		std::ifstream file;
+		file.open(R"(C:\Users\lukas\OneDrive\Emulators\NES\Debug\test.nes)", std::ios::in | std::ios::binary | std::ios::ate);
+
+		nes.loadCartridge(file);
+		nes.reset();
+
+#if 0
+		while (true)
+		{
+			nes.step();
+		}
+#endif
+		std::cin.get();
+
+		nes.reset();
+	}
+
+	{
+
+		Nes nes;
+
+		std::ifstream file;
+		file.open(R"(C:\Users\lukas\OneDrive\Emulators\NES\Debug\test.nes)", std::ios::in | std::ios::binary | std::ios::ate);
+
+		nes.loadCartridge(file);
+		nes.reset();
+
+#if 0
+		while (true)
+		{
+			nes.step();
+		}
+#endif
+		std::cin.get();
+
+		nes.reset();
+	}
+
+	std::cin.get();
+
 	return 0;
 }

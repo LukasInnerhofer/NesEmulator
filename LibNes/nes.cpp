@@ -3,10 +3,6 @@
 
 Nes::Nes()
 {
-	m_cartridge.m_rom->m_trainer = std::vector<uint8_t>();
-	m_cartridge.m_rom->m_prgRom  = std::vector<uint8_t>();
-	m_cartridge.m_rom->m_chrRom  = std::vector<uint8_t>();
-
 	m_ram = std::make_shared<std::vector<uint8_t>>(ramSize);
 
 	m_cpu = std::make_unique<LibMos6502::Mos6502>(std::make_shared<CpuMemory>(m_ram, m_cartridge.m_mapper));
@@ -68,6 +64,9 @@ void Nes::loadCartridge(std::istream& romStream)
 	//			****------ Mapper number higher nibble
 	romStream.read(&temp, 1);
 	mapperNumber |= (temp & 0xF0);
+
+	// Rest of header (reserved)
+	romStream.seekg(8, std::ios_base::cur);
 
 	if (trainerPresent)
 	{

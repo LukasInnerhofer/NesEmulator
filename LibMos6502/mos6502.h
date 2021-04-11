@@ -42,6 +42,7 @@ namespace LibMos6502
 		static constexpr uint8_t xDefault = 0;
 		static constexpr uint8_t yDefault = 0;
 		static constexpr uint8_t statusDefault = 0x34;
+		static constexpr uint16_t stackOffset = 0x100;
 
 		static constexpr uint16_t nmiVector = 0xFFFA;
 		static constexpr uint16_t resetVector = 0xFFFC;
@@ -50,6 +51,9 @@ namespace LibMos6502
 		uint8_t read8(uint16_t addr);
 		uint16_t read16(uint16_t addr);
 		void write8(uint16_t addr, uint8_t data);
+
+		void push8(uint8_t data);
+		void push16(uint16_t data);
 
 		uint16_t readAddress();
 

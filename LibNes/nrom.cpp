@@ -22,9 +22,9 @@ uint8_t NRom::read(uint16_t addr)
 
 	}
 
-	else						// TODO: PRG ROM
+	else						// PRG ROM
 	{
-					
+		data = m_rom->m_prgRom[addr - 0x8000];
 	}
 
 	return data;
