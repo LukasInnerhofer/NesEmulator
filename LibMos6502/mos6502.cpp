@@ -47,6 +47,17 @@ namespace LibMos6502
 		m_memory->read(addr);
 	}
 
+	void Mos6502::push8(uint8_t data)
+	{
+		write8(stackOffset + m_sp--, data);
+	}
+
+	void Mos6502::push16(uint16_t data)
+	{
+		write8(stackOffset + m_sp--, data >> 8);
+		write8(stackOffset + m_sp--, data & 0xFF);
+	}
+
 	uint16_t Mos6502::readAddress()
 	{
 		uint16_t addr = 0;
@@ -128,15 +139,31 @@ namespace LibMos6502
 		return addr;
 	}
 
-	void Mos6502::push8(uint8_t data)
+	void Mos6502::setNZ(uint8_t src)
 	{
-		write8(stackOffset + m_sp--, data);
+		m_status[StatusBits::Zero] = src == 0;
+		m_status[StatusBits::Negative] = src & 0x80;
 	}
 
-	void Mos6502::push16(uint16_t data)
+	void Mos6502::compare(uint8_t reg)
 	{
-		write8(stackOffset + m_sp--, data >> 8);
-		write8(stackOffset + m_sp--, data & 0xFF);
+		const uint8_t src = read8(readAddress());
+		m_status[StatusBits::Carry] = reg >= src;
+		setNZ(reg - src);
+	}
+
+	uint8_t Mos6502::decrement(uint8_t src)
+	{
+		uint8_t result = --src;
+		setNZ(result);
+		return result;
+	}
+
+	uint8_t Mos6502::increment(uint8_t src)
+	{
+		uint8_t result = ++src;
+		setNZ(result);
+		return result;
 	}
 
 	void Mos6502::ADC()
@@ -147,8 +174,7 @@ namespace LibMos6502
 		m_acc = sum & 0xFF;
 
 		m_status[StatusBits::Carry] = sum >= 0x100;
-		m_status[StatusBits::Zero] = m_acc == 0;
-		m_status[StatusBits::Negative] = m_acc & 0x80;
+		setNZ(m_acc);
 		m_status[StatusBits::Overflow] =	// Overflow occured if:
 			(!((accOld ^ src) & 0x80) &&	// Both numbers had the same sign before AND
 				((accOld ^ sum) & 0x80));	// result has a different sign
@@ -157,9 +183,7 @@ namespace LibMos6502
 	void Mos6502::AND()
 	{
 		m_acc &= read8(readAddress());
-
-		m_status[StatusBits::Zero] = m_acc == 0;
-		m_status[StatusBits::Negative] = m_acc & 0x80;
+		setNZ(m_acc);
 	}
 
 	void Mos6502::ASL()
@@ -168,8 +192,7 @@ namespace LibMos6502
 		{
 			m_status[StatusBits::Carry] = m_acc & 0x80;
 			m_acc <<= 1;
-			m_status[StatusBits::Zero] = m_acc == 0;
-			m_status[StatusBits::Negative] = m_acc & 0x80;
+			setNZ(m_acc);
 		}
 		else
 		{
@@ -177,8 +200,7 @@ namespace LibMos6502
 			uint8_t src = read8(addr);
 			m_status[StatusBits::Carry] = src & 0x80;
 			write8(addr, src <<= 1);
-			m_status[StatusBits::Zero] = src == 0;
-			m_status[StatusBits::Negative] = src & 0x80;
+			setNZ(src);
 		}
 	}
 
@@ -187,7 +209,7 @@ namespace LibMos6502
 		const uint8_t src = read8(readAddress());
 		m_status[StatusBits::Negative] = src & 0x80;
 		m_status[StatusBits::Overflow] = src & 0x40;
-		m_status[StatusBits::Zero] = (src & m_acc) != 0;
+		m_status[StatusBits::Zero] = (src & m_acc) == 0;
 	}
 
 	void Mos6502::BRK()
@@ -200,32 +222,68 @@ namespace LibMos6502
 
 	void Mos6502::CMP()
 	{
-
+		compare(m_acc);
 	}
 
 	void Mos6502::CPX()
 	{
-
+		compare(m_x);
 	}
 
 	void Mos6502::CPY()
 	{
-
+		compare(m_y);
 	}
 
 	void Mos6502::DEC()
 	{
-
+		const uint16_t addr = readAddress();
+		write8(addr, decrement(read8(addr)));
 	}
 
-	void Mos6502::DEX(){}
-	void Mos6502::DEY(){}
-	void Mos6502::EOR(){}
-	void Mos6502::INC(){}
-	void Mos6502::INX(){}
-	void Mos6502::INY(){}
-	void Mos6502::JMP(){}
-	void Mos6502::JSR(){}
+	void Mos6502::DEX()
+	{
+		m_x = decrement(m_x);
+	}
+
+	void Mos6502::DEY()
+	{
+		m_y = decrement(m_y);
+	}
+
+	void Mos6502::EOR()
+	{
+		m_acc ^= read8(readAddress());
+		setNZ(m_acc);
+	}
+
+	void Mos6502::INC()
+	{
+		const uint16_t addr = readAddress();
+		write8(addr, increment(read8(addr)));
+	}
+	
+	void Mos6502::INX()
+	{
+		m_x = increment(m_x);
+	}
+
+	void Mos6502::INY()
+	{
+		m_y = increment(m_y);
+	}
+	
+	void Mos6502::JMP()
+	{
+		m_pc = read16(readAddress());
+	}
+
+	void Mos6502::JSR()
+	{
+		push16(m_pc);
+		m_pc = read16(readAddress());
+	}
+
 	void Mos6502::LSR(){}
 	void Mos6502::NOP(){}
 	void Mos6502::ORA(){}

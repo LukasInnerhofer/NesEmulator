@@ -57,6 +57,11 @@ namespace LibMos6502
 
 		uint16_t readAddress();
 
+		void setNZ(uint8_t src);
+		void compare(uint8_t reg);
+		uint8_t decrement(uint8_t src);
+		uint8_t increment(uint8_t src);
+
 		void ADC();
 		void AND();
 		void ASL();
