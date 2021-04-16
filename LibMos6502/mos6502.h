@@ -54,29 +54,36 @@ namespace LibMos6502
 
 		void push8(uint8_t data);
 		void push16(uint16_t data);
+		uint8_t pull8();
+		uint16_t pull16();
 
 		uint16_t readAddress();
 
 		void setNZ(uint8_t src);
-		void compare(uint8_t reg);
-		uint8_t decrement(uint8_t src);
-		uint8_t increment(uint8_t src);
 
 		void ADC();
+		void SBC();
 		void AND();
 		void ASL();
 		void BIT();
 		void BRK();
+
+		void compare(uint8_t reg);
 		void CMP();
 		void CPX();
 		void CPY();
+		
+		void EOR();
+
+		uint8_t decrement(uint8_t src);
+		uint8_t increment(uint8_t src);
 		void DEC();
 		void DEX();
 		void DEY();
-		void EOR();
 		void INC();
 		void INX();
 		void INY();
+
 		void JMP();
 		void JSR();
 		void LSR();
@@ -86,7 +93,6 @@ namespace LibMos6502
 		void ROR();
 		void RTI();
 		void RTS();
-		void SBC();
 
 		void TAX();
 		void TAY();
@@ -103,6 +109,7 @@ namespace LibMos6502
 		void SED();
 		void SEI();
 
+		void branch(bool condition);
 		void BCC();
 		void BCS();
 		void BEQ();
