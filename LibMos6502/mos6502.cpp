@@ -28,6 +28,7 @@ namespace LibMos6502
 		m_addrMode = m_addrModes[opCode];
 		(this->*m_instructions[opCode])();
 		++m_pc;
+		m_cycles = 0;
 	}
 
 	uint8_t Mos6502::read8(uint16_t addr)
