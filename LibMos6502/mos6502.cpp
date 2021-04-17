@@ -19,7 +19,6 @@ namespace LibMos6502
 		m_y = yDefault;
 		m_status = statusDefault;
 		m_pc = read16(resetVector);
-		m_cycles = 0;
 	}
 
 	void Mos6502::step()
@@ -27,7 +26,7 @@ namespace LibMos6502
 		const uint8_t opCode = read8(m_pc);
 		m_addrMode = m_addrModes[opCode];
 		(this->*m_instructions[opCode])();
-		++m_pc;
+		m_pc += m_argCnts.at(m_addrMode) + 1;
 		m_cycles = 0;
 	}
 

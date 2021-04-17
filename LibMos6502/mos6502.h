@@ -4,6 +4,7 @@
 #include <array>
 #include <functional>
 #include <bitset>
+#include <map>
 #include <memory>
 #include <vector>
 
@@ -158,6 +159,25 @@ namespace LibMos6502
 		};
 
 		enum class AddrMd { Acc, Imp, Rel, Imm, ZoP, ZpX, ZpY, Abs, AbX, AbY, Pre, Pos, Ill, Ind };
+
+		const std::map<AddrMd, uint8_t> m_argCnts =
+		{
+			{ AddrMd::Acc, 0 },
+			{ AddrMd::Imp, 0 },
+			{ AddrMd::Rel, 1 },
+			{ AddrMd::Imm, 1 },
+			{ AddrMd::ZoP, 1 },
+			{ AddrMd::ZpX, 1 },
+			{ AddrMd::ZpY, 1 },
+			{ AddrMd::Abs, 2 },
+			{ AddrMd::AbX, 2 },
+			{ AddrMd::AbY, 2 },
+			{ AddrMd::Pre, 1 },
+			{ AddrMd::Pos, 1 },
+			{ AddrMd::Ill, 0 },
+			{ AddrMd::Ind, 2 }
+		};
+
 		AddrMd m_addrMode;
 #define A(addrMode) AddrMd::##addrMode
 		const std::vector<AddrMd> m_addrModes
