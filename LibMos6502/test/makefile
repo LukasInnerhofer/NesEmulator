@@ -1,8 +1,8 @@
 test.nes: test.o
 	ld65 test.o --config ines.cfg -o test.nes
 
-test.o: test.ca65
-	ca65 test.ca65
+test.o: test.s
+	ca65 test.s
 
 clean:
 	del test.o test.nes

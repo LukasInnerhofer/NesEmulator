@@ -136,87 +136,311 @@ namespace LibMos6502
 
 		void ILL();
 
-#define I(instr) &Mos6502::##instr
-		// Associates opcodes with instructions
-		const std::vector<void(Mos6502::*)()> m_instructions
+		enum class AddressMode { Acc, Imp, Rel, Imm, ZoP, ZpX, ZpY, Abs, AbX, AbY, Pre, Pos, Ill, Ind };
+
+		const std::map<AddressMode, uint8_t> m_argCnts =
 		{
-			I(BRK), I(ORA), I(ILL), I(ILL), I(ILL), I(ORA), I(ASL), I(ILL), I(PHP), I(ORA), I(ASL), I(ILL), I(ILL), I(ORA), I(ASL), I(ILL),
-			I(BPL), I(ORA), I(ILL), I(ILL), I(ILL), I(ORA), I(ASL), I(ILL), I(CLC), I(ORA), I(ILL), I(ILL), I(ILL), I(ORA), I(ASL), I(ILL),
-			I(JSR), I(AND), I(ILL), I(ILL), I(BIT), I(AND), I(ROL), I(ILL), I(PLP), I(AND), I(ROL), I(ILL), I(BIT), I(AND), I(ROL), I(ILL),
-			I(BMI), I(AND), I(ILL), I(ILL), I(ILL), I(AND), I(ROL), I(ILL), I(SEC), I(AND), I(ILL), I(ILL), I(ILL), I(AND), I(ROL), I(ILL),
-			I(RTI), I(EOR), I(ILL), I(ILL), I(ILL), I(EOR), I(LSR), I(ILL), I(PHA), I(EOR), I(LSR), I(ILL), I(JMP), I(EOR), I(LSR), I(ILL),
-			I(BVC), I(EOR), I(ILL), I(ILL), I(ILL), I(EOR), I(LSR), I(ILL), I(CLI), I(EOR), I(ILL), I(ILL), I(ILL), I(EOR), I(LSR), I(ILL),
-			I(RTS), I(ADC), I(ILL), I(ILL), I(ILL), I(ADC), I(ROR), I(ILL), I(PLA), I(ADC), I(ROR), I(ILL), I(JMP), I(ADC), I(ROR), I(ILL),
-			I(BVS), I(ADC), I(ILL), I(ILL), I(ILL), I(ADC), I(ROR), I(ILL), I(SEI), I(ADC), I(ILL), I(ILL), I(ILL), I(ADC), I(ROR), I(ILL),
-			I(ILL), I(STA), I(ILL), I(ILL), I(STY), I(STA), I(STX), I(ILL), I(DEY), I(ILL), I(TXA), I(ILL), I(STY), I(STA), I(STX), I(ILL),
-			I(BCC), I(STA), I(ILL), I(ILL), I(STY), I(STA), I(STX), I(ILL), I(TYA), I(STA), I(TXS), I(ILL), I(ILL), I(STA), I(ILL), I(ILL),
-			I(LDY), I(LDA), I(LDX), I(LDX), I(LDY), I(LDA), I(LDX), I(ILL), I(TAY), I(LDA), I(TAX), I(ILL), I(LDY), I(LDA), I(LDX), I(LDX),
-			I(BCS), I(LDA), I(ILL), I(ILL), I(LDY), I(LDA), I(LDX), I(ILL), I(CLV), I(LDA), I(TSX), I(ILL), I(LDY), I(LDA), I(LDX), I(ILL),
-			I(CPY), I(CMP), I(ILL), I(ILL), I(CPY), I(CMP), I(DEC), I(ILL), I(INY), I(CMP), I(DEX), I(ILL), I(CPY), I(CMP), I(DEC), I(ILL),
-			I(BNE), I(CMP), I(ILL), I(ILL), I(ILL), I(CMP), I(DEC), I(ILL), I(CLD), I(CMP), I(ILL), I(ILL), I(ILL), I(CMP), I(DEC), I(ILL),
-			I(CPX), I(SBC), I(ILL), I(ILL), I(CPX), I(SBC), I(INC), I(ILL), I(INX), I(SBC), I(NOP), I(ILL), I(CPX), I(SBC), I(INC), I(ILL),
-			I(BEQ), I(SBC), I(ILL), I(ILL), I(ILL), I(SBC), I(INC), I(ILL), I(SED), I(SBC), I(ILL), I(ILL), I(ILL), I(SBC), I(INC), I(ILL)
+			{ AddressMode::Acc, 0 },
+			{ AddressMode::Imp, 0 },
+			{ AddressMode::Rel, 1 },
+			{ AddressMode::Imm, 1 },
+			{ AddressMode::ZoP, 1 },
+			{ AddressMode::ZpX, 1 },
+			{ AddressMode::ZpY, 1 },
+			{ AddressMode::Abs, 2 },
+			{ AddressMode::AbX, 2 },
+			{ AddressMode::AbY, 2 },
+			{ AddressMode::Pre, 1 },
+			{ AddressMode::Pos, 1 },
+			{ AddressMode::Ill, 0 },
+			{ AddressMode::Ind, 2 }
 		};
 
-		enum class AddrMd { Acc, Imp, Rel, Imm, ZoP, ZpX, ZpY, Abs, AbX, AbY, Pre, Pos, Ill, Ind };
+		AddressMode m_addrMode;
 
-		const std::map<AddrMd, uint8_t> m_argCnts =
+		typedef struct
 		{
-			{ AddrMd::Acc, 0 },
-			{ AddrMd::Imp, 0 },
-			{ AddrMd::Rel, 1 },
-			{ AddrMd::Imm, 1 },
-			{ AddrMd::ZoP, 1 },
-			{ AddrMd::ZpX, 1 },
-			{ AddrMd::ZpY, 1 },
-			{ AddrMd::Abs, 2 },
-			{ AddrMd::AbX, 2 },
-			{ AddrMd::AbY, 2 },
-			{ AddrMd::Pre, 1 },
-			{ AddrMd::Pos, 1 },
-			{ AddrMd::Ill, 0 },
-			{ AddrMd::Ind, 2 }
+			void(Mos6502::* m_instruction)();
+			AddressMode m_addressMode;
+		} Instruction;
+
+#define I(instruction, addressMode) { &Mos6502::##instruction, AddressMode::##addressMode }
+		std::vector<Instruction> m_instructions
+		{
+			I(ILL, Ill), // 0x00
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+
+			I(ILL, Ill), // 0x10
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+
+			I(ILL, Ill), // 0x20
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+
+			I(ILL, Ill), // 0x30
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+
+			I(ILL, Ill), // 0x40
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+
+			I(ILL, Ill), // 0x50
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+
+			I(ILL, Ill), // 0x60
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+
+			I(ILL, Ill), // 0x70
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+
+			I(ILL, Ill), // 0x80
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(STA, ZoP),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+
+			I(ILL, Ill), // 0x90
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+
+			I(ILL, Ill), // 0xA0
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(LDA, Imm),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+
+			I(ILL, Ill), // 0xB0
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+
+			I(ILL, Ill), // 0xC0
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+
+			I(ILL, Ill), // 0xD0
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+
+			I(ILL, Ill), // 0xE0
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+
+			I(ILL, Ill), // 0xF0
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
+			I(ILL, Ill),
 		};
 
-		AddrMd m_addrMode;
-#define A(addrMode) AddrMd::##addrMode
-		const std::vector<AddrMd> m_addrModes
-		{
-			A(Imp), A(Pre), A(Ill), A(Ill), A(Ill), A(ZoP), A(ZoP), A(Ill),
-			A(Imp), A(Imm), A(Acc), A(Ill), A(Ill), A(Abs), A(Abs), A(Ill),
-			A(Rel), A(Pos), A(Ill), A(Ill), A(Ill), A(ZpX), A(ZpX), A(Ill),
-			A(Imp), A(AbY), A(Ill), A(Ill), A(Ill), A(AbX), A(AbX), A(Ill),
-			A(Abs), A(Pre), A(Ill), A(Ill), A(ZoP), A(ZoP), A(ZoP), A(Ill),
-			A(Imp), A(Imm), A(Acc), A(Ill), A(Abs), A(Abs), A(Abs), A(Ill),
-			A(Rel), A(Pos), A(Ill), A(Ill), A(Ill), A(ZpX), A(ZpX), A(Ill),
-			A(Imp), A(AbY), A(Ill), A(Ill), A(Ill), A(AbX), A(AbX), A(Ill),
-			A(Imp), A(Pre), A(Ill), A(Ill), A(Ill), A(ZoP), A(ZoP), A(Ill),
-			A(Imp), A(Imm), A(Acc), A(Ill), A(Abs), A(Abs), A(Abs), A(Ill),
-			A(Rel), A(Pos), A(Ill), A(Ill), A(Ill), A(ZpX), A(ZpX), A(Ill),
-			A(Imp), A(AbY), A(Ill), A(Ill), A(Ill), A(AbX), A(AbX), A(Ill),
-			A(Imp), A(Pre), A(Ill), A(Ill), A(Ill), A(ZoP), A(ZoP), A(Ill),
-			A(Imp), A(Imm), A(Acc), A(Ill), A(Ind), A(Abs), A(Abs), A(Ill),
-			A(Rel), A(Pos), A(Ill), A(Ill), A(Ill), A(ZpX), A(ZpX), A(Ill),
-			A(Imp), A(AbY), A(Ill), A(Ill), A(Ill), A(AbX), A(AbX), A(Ill),
-			A(Ill), A(Pre), A(Ill), A(Ill), A(ZoP), A(ZoP), A(ZoP), A(Ill),
-			A(Imp), A(Ill), A(Imp), A(Ill), A(Abs), A(Abs), A(Abs), A(Ill),
-			A(Rel), A(Pos), A(Ill), A(Ill), A(ZpX), A(ZpX), A(ZpY), A(Ill),
-			A(Imp), A(AbY), A(Imp), A(Ill), A(Ill), A(AbX), A(Ill), A(Ill),
-			A(Imm), A(Pre), A(Imm), A(Ill), A(ZoP), A(ZoP), A(ZoP), A(Ill),
-			A(Imp), A(Imm), A(Imp), A(Ill), A(Abs), A(Abs), A(Abs), A(Imm),
-			A(Rel), A(Pos), A(Ill), A(Ill), A(ZpX), A(ZpX), A(ZpY), A(Ill),
-			A(Imp), A(AbY), A(Imp), A(Ill), A(AbX), A(AbX), A(AbY), A(Ill),
-			A(Imm), A(Pre), A(Ill), A(Ill), A(ZoP), A(ZoP), A(ZoP), A(Ill),
-			A(Imp), A(Imm), A(Imp), A(Ill), A(Abs), A(Abs), A(Abs), A(Ill),
-			A(Rel), A(Pos), A(Ill), A(Ill), A(Ill), A(ZpX), A(ZpX), A(Ill),
-			A(Imp), A(AbY), A(Ill), A(Ill), A(Ill), A(AbX), A(AbX), A(Ill),
-			A(Imm), A(Pre), A(Ill), A(Ill), A(ZoP), A(ZoP), A(ZoP), A(Ill),
-			A(Imp), A(Imm), A(Imp), A(Ill), A(Abs), A(Abs), A(Abs), A(Ill),
-			A(Rel), A(Pos), A(Ill), A(Ill), A(Ill), A(ZpX), A(ZpX), A(Ill),
-			A(Imp), A(AbY), A(Ill), A(Ill), A(Ill), A(AbX), A(AbX), A(Ill)
-		};
-
-		const std::vector<uint8_t> m_pcIncs
+		/*const std::vector<uint8_t> m_pcIncs
 		{
 			2, 2, 0, 0, 0, 2, 2, 0, 1, 2, 1, 0, 0, 3, 3, 0,
 			2, 2, 0, 0, 0, 2, 2, 0, 1, 3, 0, 0, 0, 3, 3, 0,
@@ -236,7 +460,7 @@ namespace LibMos6502
 			2, 2, 0, 0, 0, 2, 2, 0, 1, 3, 0, 0, 0, 3, 3, 0
 		};
 
-		/*const std::vector<uint8_t> m_cycles
+		const std::vector<uint8_t> m_cycles
 		{
 			7, 6, 0, 0, 0, 3, 5, 0, 3, 2, 2, 0, 0, 4, 6, 0,
 			2, 5, 0, 0, 0, 4, 6, 0, 2, 4, 0, 0, 0, 4, 7, 0,

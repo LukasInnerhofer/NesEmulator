@@ -6,7 +6,7 @@ namespace LibMos6502
 		m_memory(memory),
 		m_pc(pcDefault), m_sp(spDefault), m_acc(accDefault), m_x(xDefault), m_y(yDefault), m_status(statusDefault),
 		m_cycles(0),
-		m_addrMode(AddrMd::Abs), m_pageCrossed(false)
+		m_addrMode(AddressMode::Abs), m_pageCrossed(false)
 	{
 
 	}
@@ -24,8 +24,8 @@ namespace LibMos6502
 	void Mos6502::step()
 	{
 		const uint8_t opCode = read8(m_pc);
-		m_addrMode = m_addrModes[opCode];
-		(this->*m_instructions[opCode])();
+		m_addrMode = m_instructions[opCode].m_addressMode;
+		(this->*m_instructions[opCode].m_instruction)();
 		m_pc += m_argCnts.at(m_addrMode) + 1;
 		m_cycles = 0;
 	}
@@ -44,7 +44,7 @@ namespace LibMos6502
 	void Mos6502::write8(uint16_t addr, uint8_t data)
 	{
 		++m_cycles;
-		m_memory->read(addr);
+		m_memory->write(addr, data);
 	}
 
 	void Mos6502::push8(uint8_t data)
@@ -77,28 +77,28 @@ namespace LibMos6502
 
 		switch (m_addrMode)
 		{
-		case AddrMd::Rel:
-		case AddrMd::Imm:
+		case AddressMode::Rel:
+		case AddressMode::Imm:
 			addr = m_pc + 1;
 			break;
 
-		case AddrMd::ZoP:
+		case AddressMode::ZoP:
 			addr = read8(m_pc + 1);
 			break;
 
-		case AddrMd::ZpX:
+		case AddressMode::ZpX:
 			addr = (read8(m_pc + 1) + m_x) & 0xFF;
 			break;
 
-		case AddrMd::ZpY:
+		case AddressMode::ZpY:
 			addr = (read8(m_pc + 1) + m_y) & 0xFF;
 			break;
 
-		case AddrMd::Abs:
+		case AddressMode::Abs:
 			addr = read16(m_pc + 1);
 			break;
 
-		case AddrMd::AbX:
+		case AddressMode::AbX:
 			addr = read16(m_pc + 1);
 			if ((((addr & 0xFF) + m_x) & 0xFF00) != 0)
 			{
@@ -107,7 +107,7 @@ namespace LibMos6502
 			addr += m_x;
 			break;
 
-		case AddrMd::AbY:
+		case AddressMode::AbY:
 			addr = read16(m_pc + 1);
 			if ((((addr & 0xFF) + m_y) & 0xFF00) != 0)
 			{
@@ -116,12 +116,12 @@ namespace LibMos6502
 			addr += m_y;
 			break;
 
-		case AddrMd::Pre:
+		case AddressMode::Pre:
 			addr = (read8(m_pc + 1) + m_x) & 0xFF;
 			addr = (read8((addr + 1) & 0xFF) << 8) | read8(addr);
 			break;
 
-		case AddrMd::Pos:
+		case AddressMode::Pos:
 			addr = read8(m_pc + 1);
 			addr = (read8((addr + 1) & 0xFF) << 8) | read8(addr);
 			if ((((addr & 0xFF) + m_y) & 0xFF00) != 0)
@@ -131,7 +131,7 @@ namespace LibMos6502
 			addr += m_y;
 			break;
 
-		case AddrMd::Ind:
+		case AddressMode::Ind:
 			addr = read16(m_pc + 1);
 			// 6502 fetches incorrectly if address is at page boundary
 			if ((addr & 0xFF) == 0xFF)
@@ -194,7 +194,7 @@ namespace LibMos6502
 
 	void Mos6502::ASL()
 	{
-		if (m_addrMode == AddrMd::Acc)
+		if (m_addrMode == AddressMode::Acc)
 		{
 			m_status[StatusBits::Carry] = m_acc & 0x80;
 			m_acc <<= 1;
@@ -312,7 +312,7 @@ namespace LibMos6502
 
 	void Mos6502::LSR()
 	{
-		if (m_addrMode == AddrMd::Acc)
+		if (m_addrMode == AddressMode::Acc)
 		{
 			m_status[StatusBits::Carry] = m_acc & 0x01;
 			m_acc >>= 1;
@@ -342,7 +342,7 @@ namespace LibMos6502
 
 	void Mos6502::ROL() 
 	{
-		if (m_addrMode == AddrMd::Acc)
+		if (m_addrMode == AddressMode::Acc)
 		{
 			const bool oldCarry = m_status[StatusBits::Carry];
 			m_status[StatusBits::Carry] = m_acc & 0x80;
@@ -362,7 +362,7 @@ namespace LibMos6502
 
 	void Mos6502::ROR()
 	{
-		if (m_addrMode == AddrMd::Acc)
+		if (m_addrMode == AddressMode::Acc)
 		{
 			const bool oldCarry = m_status[StatusBits::Carry];
 			m_status[StatusBits::Carry] = m_acc & 0x80;

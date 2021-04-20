@@ -5,8 +5,10 @@
 
 .SEGMENT "CODE"
 .PROC Code
-    LDA $13
+    LDA #$13
     STA $42
+    LDA #$EC
+    LDA $42
 Loop:
     NOP
     JMP Loop
