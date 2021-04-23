@@ -28,9 +28,9 @@ private:
 
 	Cartridge m_cartridge;
 	
-	const std::vector<std::function<std::unique_ptr<Mapper>(const Mapper::Mirroring& mirroring)>> m_mapperList =
+	const std::vector<std::function<Mapper*(const Mapper::Mirroring& mirroring)>> m_mapperList =
 	{
-		[&](const Mapper::Mirroring& mirroring) { return std::make_unique<NRom>(m_cartridge.m_rom, mirroring); }
+		[&](const Mapper::Mirroring& mirroring) { return new NRom(m_cartridge.m_rom, mirroring); }
 	};
 
 	std::unique_ptr<LibMos6502::Mos6502> m_cpu;

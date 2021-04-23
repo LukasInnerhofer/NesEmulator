@@ -76,7 +76,7 @@ void Nes::loadCartridge(std::istream& romStream)
 	romStream.read(reinterpret_cast<char*>(m_cartridge.m_rom->m_prgRom.data()), m_cartridge.m_rom->m_prgRom.size());
 	romStream.read(reinterpret_cast<char*>(m_cartridge.m_rom->m_chrRom.data()), m_cartridge.m_rom->m_chrRom.size());
 
-	*m_cartridge.m_mapper = m_mapperList[mapperNumber](mirroring);
+	m_cartridge.m_mapper.reset(m_mapperList[mapperNumber](mirroring));
 }
 
 void Nes::reset()
