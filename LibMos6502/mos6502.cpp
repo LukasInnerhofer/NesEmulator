@@ -221,7 +221,7 @@ namespace LibMos6502
 	void Mos6502::BRK()
 	{
 		push16(m_pc + 2);
-		push8(m_status.to_ulong());
+		push8(static_cast<uint8_t>(m_status.to_ulong()));
 		m_status[StatusBits::Interrupt] = true;
 		m_pc = read16(irqVector);
 	}
@@ -346,7 +346,7 @@ namespace LibMos6502
 		{
 			const bool oldCarry = m_status[StatusBits::Carry];
 			m_status[StatusBits::Carry] = m_acc & 0x80;
-			m_acc = (m_acc << 1) | oldCarry;
+			m_acc = (m_acc << 1) | static_cast<uint8_t>(oldCarry);
 			setNZ(m_acc);
 		}
 		else
@@ -355,7 +355,7 @@ namespace LibMos6502
 			uint8_t src = read8(addr);
 			const bool oldCarry = m_status[StatusBits::Carry];
 			m_status[StatusBits::Carry] = src & 0x80;
-			write8(addr, src = (src << 1) | oldCarry);
+			write8(addr, src = (src << 1) | static_cast<uint8_t>(oldCarry));
 			setNZ(src);
 		}
 	}
@@ -366,7 +366,7 @@ namespace LibMos6502
 		{
 			const bool oldCarry = m_status[StatusBits::Carry];
 			m_status[StatusBits::Carry] = m_acc & 0x80;
-			m_acc = (m_acc >> 1) | oldCarry;
+			m_acc = (m_acc >> 1) | static_cast<uint8_t>(oldCarry);
 			setNZ(m_acc);
 		}
 		else
@@ -375,7 +375,7 @@ namespace LibMos6502
 			uint8_t src = read8(addr);
 			const bool oldCarry = m_status[StatusBits::Carry];
 			m_status[StatusBits::Carry] = src & 0x80;
-			write8(addr, src = (src >> 1) | oldCarry);
+			write8(addr, src = (src >> 1) | static_cast<uint8_t>(oldCarry));
 			setNZ(src);
 		}
 	}
@@ -527,7 +527,7 @@ namespace LibMos6502
 	}
 	void Mos6502::PHP()
 	{
-		push8(m_status.to_ulong());
+		push8(static_cast<uint8_t>(m_status.to_ulong()));
 	}
 	void Mos6502::PLA()
 	{
