@@ -79,6 +79,7 @@ namespace LibMos6502
 		{
 		case AddressMode::Rel:
 		case AddressMode::Imm:
+		case AddressMode::Abs:
 			addr = m_pc + 1;
 			break;
 
@@ -92,10 +93,6 @@ namespace LibMos6502
 
 		case AddressMode::ZpY:
 			addr = (read8(m_pc + 1) + m_y) & 0xFF;
-			break;
-
-		case AddressMode::Abs:
-			addr = read16(m_pc + 1);
 			break;
 
 		case AddressMode::AbX:
@@ -331,7 +328,7 @@ namespace LibMos6502
 
 	void Mos6502::NOP()
 	{
-		// TODO: Solve Riemann's Hypothesis
+		// TODO: Prove Riemann's Hypothesis
 	}
 	
 	void Mos6502::ORA()
