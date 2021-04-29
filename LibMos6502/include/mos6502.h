@@ -36,6 +36,7 @@ namespace LibMos6502
 		};
 
 		uint8_t m_cycles;
+		uint16_t m_newPc;
 
 		static constexpr uint16_t pcDefault = 0;
 		static constexpr uint8_t spDefault = 0xFD;
@@ -52,6 +53,9 @@ namespace LibMos6502
 		uint8_t read8(uint16_t addr);
 		uint16_t read16(uint16_t addr);
 		void write8(uint16_t addr, uint8_t data);
+
+		uint8_t readArg8(uint16_t addr);
+		uint16_t readArg16(uint16_t addr);
 
 		void push8(uint8_t data);
 		void push16(uint16_t data);
@@ -137,24 +141,6 @@ namespace LibMos6502
 		void ILL();
 
 		enum class AddressMode { Acc, Imp, Rel, Imm, ZoP, ZpX, ZpY, Abs, AbX, AbY, Pre, Pos, Ill, Ind };
-
-		const std::map<AddressMode, uint8_t> m_argCnts =
-		{
-			{ AddressMode::Acc, 0 },
-			{ AddressMode::Imp, 0 },
-			{ AddressMode::Rel, 1 },
-			{ AddressMode::Imm, 1 },
-			{ AddressMode::ZoP, 1 },
-			{ AddressMode::ZpX, 1 },
-			{ AddressMode::ZpY, 1 },
-			{ AddressMode::Abs, 2 },
-			{ AddressMode::AbX, 2 },
-			{ AddressMode::AbY, 2 },
-			{ AddressMode::Pre, 1 },
-			{ AddressMode::Pos, 1 },
-			{ AddressMode::Ill, 0 },
-			{ AddressMode::Ind, 2 }
-		};
 
 		AddressMode m_addrMode;
 

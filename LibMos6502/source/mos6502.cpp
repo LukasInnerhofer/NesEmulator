@@ -5,7 +5,7 @@ namespace LibMos6502
 	Mos6502::Mos6502(std::shared_ptr<Memory> memory) :
 		m_memory(memory),
 		m_pc(pcDefault), m_sp(spDefault), m_acc(accDefault), m_x(xDefault), m_y(yDefault), m_status(statusDefault),
-		m_cycles(0),
+		m_cycles(0), m_newPc(0),
 		m_addrMode(AddressMode::Abs), m_pageCrossed(false)
 	{
 
@@ -24,10 +24,13 @@ namespace LibMos6502
 	void Mos6502::step()
 	{
 		const uint8_t opCode = read8(m_pc);
+		m_newPc = m_pc + 1;
+
 		m_addrMode = m_instructions[opCode].m_addressMode;
 		(this->*m_instructions[opCode].m_instruction)();
-		m_pc += m_argCnts.at(m_addrMode) + 1;
+
 		m_cycles = 0;
+		m_pc = m_newPc;
 	}
 
 	uint8_t Mos6502::read8(uint16_t addr)
@@ -39,6 +42,18 @@ namespace LibMos6502
 	uint16_t Mos6502::read16(uint16_t addr)
 	{
 		return (read8(addr + 1) << 8) | read8(addr);
+	}
+
+	uint8_t Mos6502::readArg8(uint16_t addr)
+	{
+		++m_newPc;
+		return read8(addr);
+	}
+
+	uint16_t Mos6502::readArg16(uint16_t addr)
+	{
+		m_newPc += 2;
+		return read16(addr);
 	}
 
 	void Mos6502::write8(uint16_t addr, uint8_t data)
@@ -77,26 +92,28 @@ namespace LibMos6502
 
 		switch (m_addrMode)
 		{
+		case AddressMode::Abs:
+			++m_newPc;
 		case AddressMode::Rel:
 		case AddressMode::Imm:
-		case AddressMode::Abs:
 			addr = m_pc + 1;
+			++m_newPc;
 			break;
 
 		case AddressMode::ZoP:
-			addr = read8(m_pc + 1);
+			addr = readArg8(m_pc + 1);
 			break;
 
 		case AddressMode::ZpX:
-			addr = (read8(m_pc + 1) + m_x) & 0xFF;
+			addr = (readArg8(m_pc + 1) + m_x) & 0xFF;
 			break;
 
 		case AddressMode::ZpY:
-			addr = (read8(m_pc + 1) + m_y) & 0xFF;
+			addr = (readArg8(m_pc + 1) + m_y) & 0xFF;
 			break;
 
 		case AddressMode::AbX:
-			addr = read16(m_pc + 1);
+			addr = readArg16(m_pc + 1);
 			if ((((addr & 0xFF) + m_x) & 0xFF00) != 0)
 			{
 				m_pageCrossed = true;
@@ -105,7 +122,7 @@ namespace LibMos6502
 			break;
 
 		case AddressMode::AbY:
-			addr = read16(m_pc + 1);
+			addr = readArg16(m_pc + 1);
 			if ((((addr & 0xFF) + m_y) & 0xFF00) != 0)
 			{
 				m_pageCrossed = true;
@@ -114,12 +131,12 @@ namespace LibMos6502
 			break;
 
 		case AddressMode::Pre:
-			addr = (read8(m_pc + 1) + m_x) & 0xFF;
+			addr = (readArg8(m_pc + 1) + m_x) & 0xFF;
 			addr = (read8((addr + 1) & 0xFF) << 8) | read8(addr);
 			break;
 
 		case AddressMode::Pos:
-			addr = read8(m_pc + 1);
+			addr = readArg8(m_pc + 1);
 			addr = (read8((addr + 1) & 0xFF) << 8) | read8(addr);
 			if ((((addr & 0xFF) + m_y) & 0xFF00) != 0)
 			{
@@ -129,7 +146,7 @@ namespace LibMos6502
 			break;
 
 		case AddressMode::Ind:
-			addr = read16(m_pc + 1);
+			addr = readArg16(m_pc + 1);
 			// 6502 fetches incorrectly if address is at page boundary
 			if ((addr & 0xFF) == 0xFF)
 			{
@@ -298,13 +315,13 @@ namespace LibMos6502
 	
 	void Mos6502::JMP()
 	{
-		m_pc = read16(readAddress());
+		m_newPc = read16(readAddress());
 	}
 
 	void Mos6502::JSR()
 	{
 		push16(m_pc);
-		m_pc = read16(readAddress());
+		m_newPc = read16(readAddress());
 	}
 
 	void Mos6502::LSR()
