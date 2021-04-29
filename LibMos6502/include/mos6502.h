@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "memory.h"
+#include "mos6502_memory.h"
 
 namespace LibMos6502
 {

@@ -1,5 +1,5 @@
-#ifndef MEMORY_H
-#define MEMORY_H
+#ifndef MOS6502_MEMORY_H
+#define MOS6502_MEMORY_H
 
 #include <cstdint>
 
@@ -13,4 +13,4 @@ namespace LibMos6502
 	};
 }
 
-#endif // MEMORY_H
+#endif // MOS_6502_MEMORY_H

@@ -10,8 +10,13 @@ int main()
 	Nes nes;
 
 	std::ifstream file;
-	file.open(R"(C:\Users\lukas\source\repos\LukasInnerhofer\NesEmulator\LibMos6502\test\test.nes)", std::ios::in | std::ios::binary | std::ios::ate);
+	file.open(R"(LibMos6502\test\test.nes)", std::ios::in | std::ios::binary | std::ios::ate);
 
+	if(!file.good())
+	{
+		return EXIT_FAILURE;
+	}
+	
 	nes.loadCartridge(file);
 	nes.reset();
 
