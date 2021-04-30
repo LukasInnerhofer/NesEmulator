@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "cpu_memory.h"
 #include "mos6502.h"
 #include "ppu.h"
 #include "cartridge.h"
@@ -26,13 +27,14 @@ private:
 	std::shared_ptr<std::vector<uint8_t>> m_ram;
 	static constexpr size_t ramSize = 0x800;
 
-	Cartridge m_cartridge;
+	std::unique_ptr<Cartridge> m_cartridge;
 	
-	const std::vector<std::function<std::unique_ptr<Mapper>(const Mapper::Mirroring& mirroring)>> m_mapperList =
+	const std::vector<std::function<std::shared_ptr<Mapper>(std::shared_ptr<Cartridge::Rom>, Mapper::Mirroring)>> m_mapperList =
 	{
-		[&](const Mapper::Mirroring& mirroring) { return std::make_unique<NRom>(m_cartridge.m_rom, mirroring); }
+		[&](std::shared_ptr<Cartridge::Rom> rom, Mapper::Mirroring mirroring) { return std::make_shared<NRom>(rom, mirroring); }
 	};
 
+	std::shared_ptr<CpuMemory> m_cpuMemory;
 	std::unique_ptr<LibMos6502::Mos6502> m_cpu;
 	std::shared_ptr<Ppu> m_ppu;
 };

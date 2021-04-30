@@ -1,7 +1,7 @@
 #include "cpu_memory.h"
 
-CpuMemory::CpuMemory(std::shared_ptr<std::vector<uint8_t>> ram, std::shared_ptr<std::unique_ptr<Mapper>> mapper) :
-	m_ram(ram), m_mapper(mapper)
+CpuMemory::CpuMemory(std::shared_ptr<std::vector<uint8_t>> ram) :
+	m_ram(ram), m_mapper(nullptr)
 {
 
 }
@@ -32,7 +32,7 @@ uint8_t CpuMemory::read(uint16_t addr)
 
 	else if (addr <= 0xFFFF)	// Cartridge space
 	{
-		data = (*m_mapper)->read(addr);
+		data = m_mapper->read(addr);
 	}
 
 	return data;
@@ -62,6 +62,11 @@ void CpuMemory::write(uint16_t addr, uint8_t data)
 
 	else						// Cartridge space
 	{
-		(*m_mapper)->write(addr, data);
+		m_mapper->write(addr, data);
 	}
+}
+
+void CpuMemory::setMapper(std::shared_ptr<Mapper> mapper)
+{
+	m_mapper = mapper;
 }

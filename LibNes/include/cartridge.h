@@ -2,6 +2,7 @@
 #define CARTRIDGE_H
 
 #include <vector>
+#include <functional>
 #include <memory>
 
 class Mapper;
@@ -10,19 +11,35 @@ struct Cartridge
 {
 	struct Rom
 	{
-		std::vector<uint8_t> m_trainer = std::vector<uint8_t>();
-		std::vector<uint8_t> m_prgRom = std::vector<uint8_t>();
-		std::vector<uint8_t> m_chrRom = std::vector<uint8_t>();
+		std::vector<uint8_t> m_trainer;
+		std::vector<uint8_t> m_prgRom;
+		std::vector<uint8_t> m_chrRom;
 
 		static constexpr size_t headerSize = 4;
 		static constexpr char header[headerSize + 1] = { 'N', 'E', 'S', 0x1A, 0 };
 		static constexpr size_t trainerSize = 512;
 		static constexpr size_t prgRomSizeMultiplier = 16384;
 		static constexpr size_t chrRomSizeMultiplier = 8192;
+
+		Rom(std::vector<uint8_t>&& trainer, std::vector<uint8_t>&& prgRom, std::vector<uint8_t>&& chrRom) :
+			m_trainer(std::move(trainer)), m_prgRom(std::move(prgRom)), m_chrRom(std::move(chrRom))
+		{
+
+		}
 	};
 
-	std::shared_ptr<Rom> m_rom = std::make_shared<Rom>();
-	std::shared_ptr<std::unique_ptr<Mapper>> m_mapper = std::make_shared<std::unique_ptr<Mapper>>(nullptr);
+	std::shared_ptr<Rom> m_rom;
+	std::shared_ptr<Mapper> m_mapper;
+
+	Cartridge(
+		std::vector<uint8_t>&& trainer, 
+		std::vector<uint8_t>&& prgRom, 
+		std::vector<uint8_t>&& chrRom, 
+		std::function<std::shared_ptr<Mapper>(std::shared_ptr<Rom>)> mapper)
+	{
+		m_rom = std::make_shared<Rom>(std::move(trainer), std::move(prgRom), std::move(chrRom));
+		m_mapper = mapper(m_rom);
+	}
 };
 
 #endif // CARTRIDGE_H

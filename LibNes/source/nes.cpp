@@ -3,40 +3,38 @@
 
 Nes::Nes()
 {
+	m_cartridge = nullptr;
 	m_ram = std::make_shared<std::vector<uint8_t>>(ramSize);
-
-	m_cpu = std::make_unique<LibMos6502::Mos6502>(std::make_shared<CpuMemory>(m_ram, m_cartridge.m_mapper));
+	m_cpuMemory = std::make_shared<CpuMemory>(m_ram);
+	m_cpu = std::make_unique<LibMos6502::Mos6502>(m_cpuMemory);
 }
 
 void Nes::loadCartridge(std::istream& romStream)
 {
-	size_t size;
-	char header[Cartridge::Rom::headerSize + 1];
-	char temp;
-	uint8_t mapperNumber;
-	bool trainerPresent;
-	Mapper::Mirroring mirroring;
-
 	// Determine stream size
 	romStream.seekg(0, std::ios_base::end);
-	size = romStream.tellg();
+	size_t size = romStream.tellg();
 
 	romStream.seekg(0, std::ios_base::beg);
 
-	// Validate header
-	romStream.read(header, Cartridge::Rom::headerSize);
-	header[sizeof(header) - 1] = 0;
-	if (std::strcmp(header, Cartridge::Rom::header) != 0)
 	{
-		// TODO: Handle invalid header.
-		return;
+		// Validate header
+		char header[Cartridge::Rom::headerSize + 1];
+		romStream.read(header, Cartridge::Rom::headerSize);
+		header[sizeof(header) - 1] = 0;
+		if (std::strcmp(header, Cartridge::Rom::header) != 0)
+		{
+			// TODO: Handle invalid header.
+			return;
+		}
 	}
 
+	char temp;
 	// Determine prg & chr ROM size
 	romStream.read(&temp, 1);
-	m_cartridge.m_rom->m_prgRom.resize(temp * Cartridge::Rom::prgRomSizeMultiplier);
+	auto prgRom = std::vector<uint8_t>(temp * Cartridge::Rom::prgRomSizeMultiplier);
 	romStream.read(&temp, 1);
-	m_cartridge.m_rom->m_chrRom.resize(temp * Cartridge::Rom::chrRomSizeMultiplier);
+	auto chrRom = std::vector<uint8_t>(temp * Cartridge::Rom::chrRomSizeMultiplier);
 
 	// Byte 6	NNNN FTBM
 	//			|||| |||*- Mirroring (if not four screen)
@@ -45,8 +43,9 @@ void Nes::loadCartridge(std::istream& romStream)
 	//			|||| *---- Four screen mirroring
 	//			****------ Mapper number lower nibble
 	romStream.read(&temp, 1);
-	mapperNumber = ((temp & 0xF0) >> 4);
-	trainerPresent = temp & 0x04;
+	size_t mapperNumber = ((temp & 0xF0) >> 4);
+	bool trainerPresent = temp & 0x04;
+	Mapper::Mirroring mirroring;
 	if (temp & 0x08) 
 	{
 		mirroring = Mapper::Mirroring::FourScreen;
@@ -68,15 +67,21 @@ void Nes::loadCartridge(std::istream& romStream)
 	// Rest of header (reserved)
 	romStream.seekg(8, std::ios_base::cur);
 
+	std::vector<uint8_t> trainer;
 	if (trainerPresent)
 	{
-		m_cartridge.m_rom->m_trainer.resize(Cartridge::Rom::trainerSize);
-		romStream.read(reinterpret_cast<char*>(m_cartridge.m_rom->m_trainer.data()), m_cartridge.m_rom->m_trainer.size());
+		trainer.resize(Cartridge::Rom::trainerSize);
+		romStream.read(reinterpret_cast<char*>(trainer.data()), trainer.size());
 	}
-	romStream.read(reinterpret_cast<char*>(m_cartridge.m_rom->m_prgRom.data()), m_cartridge.m_rom->m_prgRom.size());
-	romStream.read(reinterpret_cast<char*>(m_cartridge.m_rom->m_chrRom.data()), m_cartridge.m_rom->m_chrRom.size());
+	romStream.read(reinterpret_cast<char*>(prgRom.data()), prgRom.size());
+	romStream.read(reinterpret_cast<char*>(chrRom.data()), chrRom.size());
 
-	*(m_cartridge.m_mapper) = m_mapperList[mapperNumber](mirroring);
+	m_cartridge = std::make_unique<Cartridge>(
+		std::move(trainer),
+		std::move(prgRom), 
+		std::move(chrRom), 
+		[&](std::shared_ptr<Cartridge::Rom> rom) { return m_mapperList[mapperNumber](rom, mirroring); });
+	m_cpuMemory->setMapper(m_cartridge->m_mapper);
 }
 
 void Nes::reset()
