@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20.1)
+cmake_minimum_required(VERSION 3.18.5)
 
 add_library(LibMos6502 
     source/mos6502.cpp

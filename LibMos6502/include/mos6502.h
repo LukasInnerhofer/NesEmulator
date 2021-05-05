@@ -150,7 +150,7 @@ namespace LibMos6502
 			AddressMode m_addressMode;
 		} Instruction;
 
-#define I(instruction, addressMode) { &Mos6502::##instruction, AddressMode::##addressMode }
+#define I(instruction, addressMode) { &Mos6502::instruction, AddressMode::addressMode }
 		std::vector<Instruction> m_instructions
 		{
 			I(ILL, Ill), // 0x00

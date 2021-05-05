@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include "nes.h"
 #include "cpu_memory.h"
 
