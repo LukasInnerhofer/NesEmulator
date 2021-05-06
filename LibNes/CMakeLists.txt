@@ -19,3 +19,5 @@ target_include_directories(${LIB_NAME} PUBLIC include)
 
 get_target_property(LIB_MOS6502_INCLUDE LibMos6502 INCLUDE_DIRECTORIES)
 target_include_directories(${LIB_NAME} PRIVATE ${LIB_MOS6502_INCLUDE})
+
+target_link_libraries(${LIB_NAME} LibMos6502)

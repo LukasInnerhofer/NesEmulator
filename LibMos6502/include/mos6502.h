@@ -1,5 +1,5 @@
-#ifndef CPU_H
-#define CPU_H
+#ifndef MOS6502_H
+#define MOS6502_H
 
 #include <array>
 #include <functional>
@@ -489,4 +489,4 @@ namespace LibMos6502
 	};
 }
 
-#endif // CPU_H
+#endif // MOS6502_H
