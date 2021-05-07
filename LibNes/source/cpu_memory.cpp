@@ -1,5 +1,8 @@
 #include "cpu_memory.h"
 
+namespace LibNes
+{
+
 CpuMemory::CpuMemory(std::shared_ptr<std::vector<uint8_t>> ram) :
 	m_ram(ram), m_mapper(nullptr)
 {
@@ -70,3 +73,5 @@ void CpuMemory::setMapper(std::shared_ptr<Mapper> mapper)
 {
 	m_mapper = mapper;
 }
+
+} // namespace LibNes

@@ -3,6 +3,9 @@
 #include "nes.h"
 #include "cpu_memory.h"
 
+namespace LibNes
+{
+
 Nes::Nes()
 {
 	m_cartridge = nullptr;
@@ -95,3 +98,5 @@ void Nes::step()
 {
 	m_cpu->step();
 }
+
+} // namespace LibNes

@@ -14,6 +14,9 @@
 #include "mapper.h"
 #include "nrom.h"
 
+namespace LibNes
+{
+
 class Nes
 {
 public:
@@ -38,5 +41,7 @@ private:
 	std::unique_ptr<LibMos6502::Mos6502> m_cpu;
 	std::shared_ptr<Ppu> m_ppu;
 };
+
+} // namespace LibNes
 
 #endif // NES_H

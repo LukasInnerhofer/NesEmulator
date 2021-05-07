@@ -5,6 +5,9 @@
 #include <functional>
 #include <memory>
 
+namespace LibNes
+{
+
 class Mapper;
 
 struct Cartridge
@@ -41,5 +44,7 @@ struct Cartridge
 		m_mapper = mapper(m_rom);
 	}
 };
+
+} // namespace LibNes
 
 #endif // CARTRIDGE_H

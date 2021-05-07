@@ -5,6 +5,9 @@
 
 #include "cartridge.h"
 
+namespace LibNes
+{
+
 class Mapper
 {
 public:
@@ -19,5 +22,7 @@ protected:
 	Mirroring m_mirroring;
 	std::shared_ptr<Cartridge::Rom> m_rom;
 };
+
+} // namespace LibNes
 
 #endif // MAPPER_H

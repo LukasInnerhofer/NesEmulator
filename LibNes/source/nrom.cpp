@@ -1,5 +1,8 @@
 #include "nrom.h"
 
+namespace LibNes
+{
+
 uint8_t NRom::read(uint16_t addr)
 {
 	uint8_t data = 0;
@@ -34,3 +37,5 @@ void NRom::write(uint16_t addr, uint8_t data)
 {
 	
 }
+
+} // namespace LibNes

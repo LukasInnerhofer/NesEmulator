@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
 	}
 	std::string filePath { argv[1] };
 
-	Nes nes;
+	LibNes::Nes nes;
 
 	std::ifstream file;
 	file.open(filePath, std::ios::in | std::ios::binary | std::ios::ate);
@@ -31,5 +31,5 @@ int main(int argc, char* argv[])
 		nes.step();
 	}
 
-	return 0;
+	return EXIT_SUCCESS;
 }

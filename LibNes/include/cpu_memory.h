@@ -7,6 +7,9 @@
 #include "mapper.h"
 #include "mos6502_memory.h"
 
+namespace LibNes
+{
+
 class CpuMemory : public LibMos6502::Memory
 {
 public:
@@ -21,5 +24,7 @@ private:
 	std::shared_ptr<std::vector<uint8_t>> m_ram;
 	std::shared_ptr<Mapper> m_mapper;
 };
+
+}
 
 #endif // CPU_MEMORY_H
