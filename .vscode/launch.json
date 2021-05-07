@@ -9,7 +9,7 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/NesEmulator/Debug/NesEmulator.exe",
-            "args": [],
+            "args": ["${workspaceFolder}/LibMos6502/test/test.nes"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
