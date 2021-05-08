@@ -197,7 +197,7 @@ void Mos6502::SBC()
 {
 	const uint8_t accOld{m_acc};
 	const uint8_t src{read8(readAddress())};
-	const uint16_t dif{m_acc - src - ~m_status[StatusBits::Carry]};
+	const uint16_t dif{static_cast<uint16_t>(m_acc - src - ~m_status[StatusBits::Carry])};
 	m_acc = dif & 0xFF;
 
 	m_status[StatusBits::Carry] = dif < 0x100;
