@@ -15,6 +15,9 @@ Mos6502::Mos6502(std::shared_ptr<Memory> memory) :
 	m_newPc{0},
 	m_addrMode{AddressMode::Abs}, 
 	m_pageCrossed{false}
+#if defined(LIB_MOS6502_LOG)
+	, m_log{"log.txt"}
+#endif
 {
 
 }

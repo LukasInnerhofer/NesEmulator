@@ -8,6 +8,10 @@
 #include <memory>
 #include <vector>
 
+#if defined(LIB_MOS6502_LOG)
+#include <fstream>
+#endif
+
 #include "mos6502_memory.h"
 
 namespace LibMos6502
@@ -22,6 +26,10 @@ public:
 	void step();
 
 private:
+#if defined(LIB_MOS6502_LOG)
+	std::ofstream m_log;
+#endif
+
 	std::shared_ptr<Memory> m_memory;
 
 	uint16_t m_pc;
@@ -45,17 +53,17 @@ private:
 	uint8_t m_cycles;
 	uint16_t m_newPc;
 
-	static constexpr uint16_t pcDefault = 0;
-	static constexpr uint8_t spDefault = 0xFD;
-	static constexpr uint8_t accDefault = 0;
-	static constexpr uint8_t xDefault = 0;
-	static constexpr uint8_t yDefault = 0;
-	static constexpr uint8_t statusDefault = 0x34;
-	static constexpr uint16_t stackOffset = 0x100;
+	static constexpr uint16_t pcDefault{0};
+	static constexpr uint8_t spDefault{0xFD};
+	static constexpr uint8_t accDefault{0};
+	static constexpr uint8_t xDefault{0};
+	static constexpr uint8_t yDefault{0};
+	static constexpr uint8_t statusDefault{0x34};
+	static constexpr uint16_t stackOffset{0x100};
 
-	static constexpr uint16_t nmiVector = 0xFFFA;
-	static constexpr uint16_t resetVector = 0xFFFC;
-	static constexpr uint16_t irqVector = 0xFFFE;
+	static constexpr uint16_t nmiVector{0xFFFA};
+	static constexpr uint16_t resetVector{0xFFFC};
+	static constexpr uint16_t irqVector{0xFFFE};
 
 	uint8_t read8(uint16_t addr);
 	uint16_t read16(uint16_t addr);
