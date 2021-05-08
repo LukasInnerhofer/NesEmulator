@@ -59,7 +59,7 @@ private:
 	static constexpr uint8_t accDefault{0};
 	static constexpr uint8_t xDefault{0};
 	static constexpr uint8_t yDefault{0};
-	static constexpr uint8_t statusDefault{0x34};
+	static constexpr uint8_t statusDefault{0x24};
 	static constexpr uint16_t stackOffset{0x100};
 	static constexpr uint32_t clockMin{1000000}; // 1MHz
 	static constexpr uint32_t clockMax{3000000}; // 3MHz;
@@ -350,7 +350,7 @@ private:
 
 		I(ILL, Ill), // 0xA0
 		I(ILL, Ill),
-		I(ILL, Ill),
+		I(LDX, Imm),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(LDA, ZoP),
@@ -370,7 +370,7 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
+		I(LDA, ZpX),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),

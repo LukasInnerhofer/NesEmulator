@@ -76,7 +76,7 @@ void Mos6502::step()
 		}
 	}
 	m_log << std::setfill(' ') << std::setw(9) << std::left << ss.str() << " " <<
-		instruction.m_name << " " << std::setfill('0') <<
+		instruction.m_name << " " << std::setfill('0') << std::right << 
 		"A:" << std::setw(2) << static_cast<int>(m_acc) << " " << 
 		"X:" << std::setw(2) << static_cast<int>(m_x) << " " << 
 		"Y:" << std::setw(2) << static_cast<int>(m_y) << " " << 
