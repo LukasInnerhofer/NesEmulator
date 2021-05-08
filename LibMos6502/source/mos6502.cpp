@@ -579,7 +579,7 @@ void Mos6502::PHA()
 }
 void Mos6502::PHP()
 {
-	push8(static_cast<uint8_t>(m_status.to_ulong()));
+	push8(static_cast<uint8_t>(m_status.to_ulong()) | 0x30);
 }
 void Mos6502::PLA()
 {
