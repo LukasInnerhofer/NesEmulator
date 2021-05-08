@@ -98,14 +98,11 @@ void Nes::reset()
 void Nes::runFor(std::chrono::nanoseconds time)
 {
 	const std::chrono::time_point start = std::chrono::steady_clock::now();
-	for(int64_t iterations{time / cpuCycleTime}; iterations > 0; --iterations)
+	for(int64_t iterations{time / cpuCycleTime}; iterations > 0; iterations -= m_cpu->getCycles())
 	{
 		m_cpu->step();
 	}
-	auto now = std::chrono::steady_clock::now();
 	std::this_thread::sleep_until(start + time);
-	auto end = std::chrono::steady_clock::now();
-	auto diff = now - start;
 }
 
 } // namespace LibNes

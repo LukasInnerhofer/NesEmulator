@@ -43,49 +43,32 @@ void Mos6502::reset()
 
 void Mos6502::step()
 {
+	m_cycles = 0;
 	const uint8_t opCode{read8(m_pc)};
 	m_newPc = m_pc + 1;
 
 	const Instruction instruction{m_instructions[opCode]};
 
-	m_addrMode = instruction.m_addressMode;
-	(this->*instruction.m_instruction)();
-
 #if defined(LIB_MOS6502_LOG)
-	m_log << std::hex << std::setfill('0') << std::setw(4) << m_pc;
-
-	std::stringstream ss;
-	ss  << std::hex << std::setfill('0');
-	for(uint16_t addr = m_pc; true; ++addr)
-	{
-		ss << " " << std::setw(2) << static_cast<int>(m_memory->read(addr));
-
-		if(instruction.m_name == "JMP")
-		{
-			if(addr >= m_pc + 2)
-			{
-				break;
-			}
-		}
-		else
-		{
-			if(addr >= m_newPc - 1)
-			{
-				break;
-			}
-		}
-	}
-	m_log << std::setfill(' ') << std::setw(9) << std::left << ss.str() << " " <<
-		instruction.m_name << " " << std::setfill('0') << std::right << 
+	m_log << std::hex << std::setfill('0') << std::setw(4) << std::uppercase << 
+		m_pc << " " << std::setw(2) << static_cast<int>(opCode) << " " <<
+		instruction.m_name << " " << std::right <<
 		"A:" << std::setw(2) << static_cast<int>(m_acc) << " " << 
 		"X:" << std::setw(2) << static_cast<int>(m_x) << " " << 
 		"Y:" << std::setw(2) << static_cast<int>(m_y) << " " << 
-		"P:" << std::setw(2) << m_status.to_ulong() << " " << 
-		"SP:" << std::setw(2) << static_cast<int>(m_sp) << " " << "\n";
+		"P:" << std::setw(2) << (m_status.to_ulong() & 0xEF) << " " << 
+		"SP:" << std::setw(2) << static_cast<int>(m_sp) << "\n";
 #endif
 
-	m_cycles = 0;
+	m_addrMode = instruction.m_addressMode;
+	(this->*instruction.m_instruction)();
+
 	m_pc = m_newPc;
+}
+
+uint8_t Mos6502::getCycles()
+{
+	return m_cycles;
 }
 
 uint8_t Mos6502::read8(uint16_t addr)
@@ -124,19 +107,19 @@ void Mos6502::push8(uint8_t data)
 
 void Mos6502::push16(uint16_t data)
 {
-	write8(stackOffset + m_sp--, data >> 8);
-	write8(stackOffset + m_sp--, data & 0xFF);
+	push8(data >> 8);
+	push8(data & 0xFF);
 }
 
 uint8_t Mos6502::pull8()
 {
-	return read8(stackOffset + m_sp++);
+	return read8(stackOffset + ++m_sp);
 }
 
 uint16_t Mos6502::pull16()
 {
-	uint16_t data{read8(stackOffset + m_sp++)};
-	data |= read8(stackOffset + m_sp++) << 8;
+	uint16_t data{pull8()};
+	data |= pull8() << 8;
 	return data;
 }
 
@@ -372,7 +355,7 @@ void Mos6502::JMP()
 
 void Mos6502::JSR()
 {
-	push16(m_pc);
+	push16(m_pc + 2);
 	m_newPc = read16(readAddress());
 }
 
@@ -449,12 +432,12 @@ void Mos6502::ROR()
 void Mos6502::RTI()
 {
 	m_status = pull16();
-	m_pc = pull8();
+	m_newPc = pull8();
 }
 
 void Mos6502::RTS()
 {
-	m_pc = pull16() + 1;
+	m_newPc = pull16() + 1;
 }
 
 void Mos6502::TAX()
@@ -536,9 +519,12 @@ void Mos6502::branch(bool condition)
 	if (condition)
 	{
 		++m_cycles;
-		const uint16_t oldPc{m_pc};
-		m_pc += read8(readAddress());
-		m_cycles += 2 * ((oldPc & 0xFF00) != (m_pc & 0xFF00));
+		m_newPc += read8(readAddress());
+		m_cycles += 2 * ((m_pc & 0xFF00) != (m_newPc & 0xFF00));
+	}
+	else
+	{
+		++m_newPc;
 	}
 }
 void Mos6502::BCC()
@@ -597,7 +583,7 @@ void Mos6502::PHP()
 }
 void Mos6502::PLA()
 {
-	m_acc = pull8();
+	setNZ(m_acc = pull8());
 }
 void Mos6502::PLP()
 {

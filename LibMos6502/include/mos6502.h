@@ -26,6 +26,8 @@ public:
 	void reset();
 	void step();
 
+	uint8_t getCycles();
+
 private:
 #if defined(LIB_MOS6502_LOG)
 	std::ofstream m_log;
@@ -45,8 +47,8 @@ private:
 		static constexpr size_t 
 			Carry { 0 }, 
 			Zero { 1 }, 
-			Interrupt { 3 }, 
-			Decimal { 4 }, 
+			Interrupt { 2 }, 
+			Decimal { 3 }, 
 			Overflow { 6 }, 
 			Negative { 7 };
 	};
@@ -59,7 +61,7 @@ private:
 	static constexpr uint8_t accDefault{0};
 	static constexpr uint8_t xDefault{0};
 	static constexpr uint8_t yDefault{0};
-	static constexpr uint8_t statusDefault{0x24};
+	static constexpr uint8_t statusDefault{0x34};
 	static constexpr uint16_t stackOffset{0x100};
 	static constexpr uint32_t clockMin{1000000}; // 1MHz
 	static constexpr uint32_t clockMax{3000000}; // 3MHz;
@@ -186,24 +188,7 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-
-		I(ILL, Ill), // 0x10
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(PHP, Imp),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -212,7 +197,7 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 
-		I(ILL, Ill), // 0x20
+		I(BPL, Rel), // 0x10
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -220,8 +205,25 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
+		I(CLC, Imp),
 		I(ILL, Ill),
 		I(ILL, Ill),
+		I(ILL, Ill),
+		I(ILL, Ill),
+		I(ILL, Ill),
+		I(ILL, Ill),
+		I(ILL, Ill),
+
+		I(JSR, Abs), // 0x20
+		I(ILL, Ill),
+		I(ILL, Ill),
+		I(ILL, Ill),
+		I(BIT, ZoP),
+		I(ILL, Ill),
+		I(ILL, Ill),
+		I(ILL, Ill),
+		I(ILL, Ill),
+		I(AND, Imm),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -237,7 +239,7 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
+		I(SEC, Imp),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -263,7 +265,7 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 
-		I(ILL, Ill), // 0x50
+		I(BVC, Rel), // 0x50
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -280,7 +282,7 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 
-		I(ILL, Ill), // 0x60
+		I(RTS, Imp), // 0x60
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -288,7 +290,7 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
+		I(PLA, Imp),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -297,7 +299,7 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 
-		I(ILL, Ill), // 0x70
+		I(BVS, Rel), // 0x70
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -305,7 +307,7 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
+		I(SEI, Imp),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -320,7 +322,7 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(STA, ZoP),
-		I(ILL, Ill),
+		I(STX, Imm),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -331,7 +333,7 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 
-		I(ILL, Ill), // 0x90
+		I(BCC, Rel), // 0x90
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -365,7 +367,7 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 
-		I(ILL, Ill), // 0xB0
+		I(BCS, Rel), // 0xB0
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -399,7 +401,7 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 
-		I(ILL, Ill), // 0xD0
+		I(BNE, Rel), // 0xD0
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -433,7 +435,7 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 
-		I(ILL, Ill), // 0xF0
+		I(BEQ, Rel), // 0xF0
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -441,7 +443,7 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
+		I(SED, Imp),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
