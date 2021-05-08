@@ -18,14 +18,19 @@ struct Cartridge
 		std::vector<uint8_t> m_prgRom;
 		std::vector<uint8_t> m_chrRom;
 
-		static constexpr size_t headerSize = 4;
-		static constexpr char header[headerSize + 1] = { 'N', 'E', 'S', 0x1A, 0 };
-		static constexpr size_t trainerSize = 512;
-		static constexpr size_t prgRomSizeMultiplier = 16384;
-		static constexpr size_t chrRomSizeMultiplier = 8192;
+		static constexpr size_t headerSize{4};
+		static constexpr char header[headerSize + 1]{'N', 'E', 'S', 0x1A, 0};
+		static constexpr size_t trainerSize{512};
+		static constexpr size_t prgRomSizeMultiplier{16384};
+		static constexpr size_t chrRomSizeMultiplier{8192};
 
-		Rom(std::vector<uint8_t>&& trainer, std::vector<uint8_t>&& prgRom, std::vector<uint8_t>&& chrRom) :
-			m_trainer(std::move(trainer)), m_prgRom(std::move(prgRom)), m_chrRom(std::move(chrRom))
+		Rom(
+			std::vector<uint8_t>&& trainer, 
+			std::vector<uint8_t>&& prgRom, 
+			std::vector<uint8_t>&& chrRom) :
+			m_trainer{std::move(trainer)}, 
+			m_prgRom{std::move(prgRom)}, 
+			m_chrRom{std::move(chrRom)}
 		{
 
 		}

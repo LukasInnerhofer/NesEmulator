@@ -33,7 +33,13 @@ private:
 	class StatusBits
 	{
 	public:
-		static constexpr size_t Carry = 0, Zero = 1, Interrupt = 3, Decimal = 4, Overflow = 6, Negative = 7;
+		static constexpr size_t 
+			Carry { 0 }, 
+			Zero { 1 }, 
+			Interrupt { 3 }, 
+			Decimal { 4 }, 
+			Overflow { 6 }, 
+			Negative { 7 };
 	};
 
 	uint8_t m_cycles;

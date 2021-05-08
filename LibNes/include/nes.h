@@ -28,11 +28,15 @@ public:
 
 private:
 	std::shared_ptr<std::vector<uint8_t>> m_ram;
-	static constexpr size_t ramSize = 0x800;
+	static constexpr size_t ramSize{0x800};
 
 	std::unique_ptr<Cartridge> m_cartridge;
 	
-	const std::vector<std::function<std::shared_ptr<Mapper>(std::shared_ptr<Cartridge::Rom>, Mapper::Mirroring)>> m_mapperList =
+	const std::vector<
+		std::function<
+			std::shared_ptr<Mapper>(
+				std::shared_ptr<Cartridge::Rom>, 
+				Mapper::Mirroring)>> m_mapperList
 	{
 		[&](std::shared_ptr<Cartridge::Rom> rom, Mapper::Mirroring mirroring) { return std::make_shared<NRom>(rom, mirroring); }
 	};

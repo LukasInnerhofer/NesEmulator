@@ -18,7 +18,7 @@ void Nes::loadCartridge(std::istream& romStream)
 {
 	// Determine stream size
 	romStream.seekg(0, std::ios_base::end);
-	size_t size = romStream.tellg();
+	std::streampos size{romStream.tellg()};
 
 	romStream.seekg(0, std::ios_base::beg);
 
@@ -37,9 +37,9 @@ void Nes::loadCartridge(std::istream& romStream)
 	char temp;
 	// Determine prg & chr ROM size
 	romStream.read(&temp, 1);
-	auto prgRom = std::vector<uint8_t>(temp * Cartridge::Rom::prgRomSizeMultiplier);
+	auto prgRom{std::vector<uint8_t>(temp * Cartridge::Rom::prgRomSizeMultiplier)};
 	romStream.read(&temp, 1);
-	auto chrRom = std::vector<uint8_t>(temp * Cartridge::Rom::chrRomSizeMultiplier);
+	auto chrRom{std::vector<uint8_t>(temp * Cartridge::Rom::chrRomSizeMultiplier)};
 
 	// Byte 6	NNNN FTBM
 	//			|||| |||*- Mirroring (if not four screen)
@@ -48,8 +48,8 @@ void Nes::loadCartridge(std::istream& romStream)
 	//			|||| *---- Four screen mirroring
 	//			****------ Mapper number lower nibble
 	romStream.read(&temp, 1);
-	size_t mapperNumber = ((temp & 0xF0) >> 4);
-	bool trainerPresent = temp & 0x04;
+	auto mapperNumber{static_cast<size_t>((temp & 0xF0) >> 4)};
+	auto trainerPresent{static_cast<bool>(temp & 0x04)};
 	Mapper::Mirroring mirroring;
 	if (temp & 0x08) 
 	{
