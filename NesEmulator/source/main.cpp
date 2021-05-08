@@ -1,7 +1,8 @@
-#include <fstream>
+#include <atomic>
 #include <chrono>
-#include <thread>
+#include <fstream>
 #include <iostream>
+#include <thread>
 
 #include "nes.h"
 
