@@ -1,7 +1,7 @@
 #include <iomanip>
 #include <stdexcept>
 #include <string>
-#include <thread>
+#include <sstream>
 
 #include "mos6502.h"
 
@@ -48,14 +48,41 @@ void Mos6502::step()
 
 	const Instruction instruction{m_instructions[opCode]};
 
-#if defined(LIB_MOS6502_LOG)
-	m_log << std::hex << 
-		std::setfill('0') << std::setw(4) << m_pc << " " <<
-		instruction.m_name << "\n";
-#endif
-
 	m_addrMode = instruction.m_addressMode;
 	(this->*instruction.m_instruction)();
+
+#if defined(LIB_MOS6502_LOG)
+	m_log << std::hex << std::setfill('0') << std::setw(4) << m_pc;
+
+	std::stringstream ss;
+	ss  << std::hex << std::setfill('0');
+	for(uint16_t addr = m_pc; true; ++addr)
+	{
+		ss << " " << std::setw(2) << static_cast<int>(m_memory->read(addr));
+
+		if(instruction.m_name == "JMP")
+		{
+			if(addr >= m_pc + 2)
+			{
+				break;
+			}
+		}
+		else
+		{
+			if(addr >= m_newPc - 1)
+			{
+				break;
+			}
+		}
+	}
+	m_log << std::setfill(' ') << std::setw(9) << std::left << ss.str() << " " <<
+		instruction.m_name << " " << std::setfill('0') <<
+		"A:" << std::setw(2) << static_cast<int>(m_acc) << " " << 
+		"X:" << std::setw(2) << static_cast<int>(m_x) << " " << 
+		"Y:" << std::setw(2) << static_cast<int>(m_y) << " " << 
+		"P:" << std::setw(2) << m_status.to_ulong() << " " << 
+		"SP:" << std::setw(2) << static_cast<int>(m_sp) << " " << "\n";
+#endif
 
 	m_cycles = 0;
 	m_pc = m_newPc;
