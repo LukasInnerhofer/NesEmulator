@@ -2,8 +2,9 @@
 #define MOS6502_H
 
 #include <array>
-#include <functional>
+#include <chrono>
 #include <bitset>
+#include <functional>
 #include <map>
 #include <memory>
 #include <vector>
@@ -60,6 +61,8 @@ private:
 	static constexpr uint8_t yDefault{0};
 	static constexpr uint8_t statusDefault{0x34};
 	static constexpr uint16_t stackOffset{0x100};
+	static constexpr uint32_t clockMin{1000000}; // 1MHz
+	static constexpr uint32_t clockMax{3000000}; // 3MHz;
 
 	static constexpr uint16_t nmiVector{0xFFFA};
 	static constexpr uint16_t resetVector{0xFFFC};
@@ -163,9 +166,16 @@ private:
 	{
 		void(Mos6502::* m_instruction)();
 		AddressMode m_addressMode;
+#if defined(LIB_MOS6502_LOG)
+		std::string m_name;
+#endif
 	} Instruction;
 
+#if defined(LIB_MOS6502_LOG)
+#define I(instruction, addressMode) { &Mos6502::instruction, AddressMode::addressMode, #instruction }
+#else
 #define I(instruction, addressMode) { &Mos6502::instruction, AddressMode::addressMode }
+#endif // defined(LIB_MOS6502_LOG)
 	std::vector<Instruction> m_instructions
 	{
 		I(ILL, Ill), // 0x00

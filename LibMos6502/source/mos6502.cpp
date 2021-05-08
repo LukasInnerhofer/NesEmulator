@@ -1,7 +1,16 @@
+#include <iomanip>
+#include <stdexcept>
+#include <string>
+#include <thread>
+
 #include "mos6502.h"
 
 namespace LibMos6502
 {
+
+#if defined(LIB_MOS6502_LOG)
+static size_t instance{0};
+#endif
 
 Mos6502::Mos6502(std::shared_ptr<Memory> memory) :
 	m_memory{memory},
@@ -16,7 +25,7 @@ Mos6502::Mos6502(std::shared_ptr<Memory> memory) :
 	m_addrMode{AddressMode::Abs}, 
 	m_pageCrossed{false}
 #if defined(LIB_MOS6502_LOG)
-	, m_log{"log.txt"}
+	, m_log{"log" + std::to_string(instance++) + ".txt"}
 #endif
 {
 
@@ -37,8 +46,16 @@ void Mos6502::step()
 	const uint8_t opCode{read8(m_pc)};
 	m_newPc = m_pc + 1;
 
-	m_addrMode = m_instructions[opCode].m_addressMode;
-	(this->*m_instructions[opCode].m_instruction)();
+	const Instruction instruction{m_instructions[opCode]};
+
+#if defined(LIB_MOS6502_LOG)
+	m_log << std::hex << 
+		std::setfill('0') << std::setw(4) << m_pc << " " <<
+		instruction.m_name << "\n";
+#endif
+
+	m_addrMode = instruction.m_addressMode;
+	(this->*instruction.m_instruction)();
 
 	m_cycles = 0;
 	m_pc = m_newPc;

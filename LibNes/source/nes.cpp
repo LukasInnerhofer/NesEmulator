@@ -1,4 +1,5 @@
 #include <cstring>
+#include <thread>
 
 #include "nes.h"
 #include "cpu_memory.h"
@@ -94,9 +95,17 @@ void Nes::reset()
 	m_cpu->reset();
 }
 
-void Nes::step()
+void Nes::runFor(std::chrono::nanoseconds time)
 {
-	m_cpu->step();
+	const std::chrono::time_point start = std::chrono::steady_clock::now();
+	for(int64_t iterations{time / cpuCycleTime}; iterations > 0; --iterations)
+	{
+		m_cpu->step();
+	}
+	auto now = std::chrono::steady_clock::now();
+	std::this_thread::sleep_until(start + time);
+	auto end = std::chrono::steady_clock::now();
+	auto diff = now - start;
 }
 
 } // namespace LibNes

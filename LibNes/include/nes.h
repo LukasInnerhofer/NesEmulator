@@ -23,7 +23,7 @@ public:
 	Nes();
 
 	void loadCartridge(std::istream& romStream);
-	void step();
+	void runFor(std::chrono::nanoseconds time);
 	void reset();
 
 private:
@@ -43,6 +43,7 @@ private:
 
 	std::shared_ptr<CpuMemory> m_cpuMemory;
 	std::unique_ptr<LibMos6502::Mos6502> m_cpu;
+	static constexpr std::chrono::nanoseconds cpuCycleTime{static_cast<uint16_t>(1000000000. / 1790000)}; // 1/(1.79 MHz)
 	std::shared_ptr<Ppu> m_ppu;
 };
 
