@@ -73,6 +73,7 @@ private:
 
 	uint8_t read8(uint16_t addr);
 	uint16_t read16(uint16_t addr);
+	uint16_t readPage16(uint16_t addr);
 	void write8(uint16_t addr, uint8_t data);
 
 	uint8_t readArg8(uint16_t addr);
@@ -162,7 +163,7 @@ private:
 
 	void ILL();
 
-	enum class AddressMode { Acc, Imp, Rel, Imm, ZoP, ZpX, ZpY, Abs, AbX, AbY, Pre, Pos, Ill, Ind, InX, InY };
+	enum class AddressMode { Acc, Imp, Rel, Imm, ZoP, ZpX, ZpY, Abs, AbX, AbY, Pre, Pos, Ill, Ind };
 
 	AddressMode m_addrMode;
 
@@ -183,7 +184,7 @@ private:
 	std::vector<Instruction> m_instructions
 	{
 		I(ILL, Ill), // 0x00
-		I(ORA, InX),
+		I(ORA, Pre),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -200,24 +201,24 @@ private:
 		I(ILL, Ill),
 
 		I(BPL, Rel), // 0x10
+		I(ORA, Pos),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(ORA, ZpX),
+		I(ASL, ZpX),
 		I(ILL, Ill),
 		I(CLC, Imp),
+		I(ORA, AbY),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(ORA, AbX),
+		I(ASL, AbX),
 		I(ILL, Ill),
 
 		I(JSR, Abs), // 0x20
-		I(AND, InX),
+		I(AND, Pre),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(BIT, ZoP),
@@ -233,25 +234,25 @@ private:
 		I(ROL, Abs),
 		I(ILL, Ill),
 
-		I(BMI, Imp), // 0x30
+		I(BMI, Rel), // 0x30
+		I(AND, Pos),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(AND, ZpX),
+		I(ROL, ZpX),
 		I(ILL, Ill),
 		I(SEC, Imp),
+		I(AND, AbY),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(AND, AbX),
+		I(ROL, AbX),
 		I(ILL, Ill),
 
 		I(RTI, Imp), // 0x40
-		I(EOR, InX),
+		I(EOR, Pre),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -268,24 +269,24 @@ private:
 		I(ILL, Ill),
 
 		I(BVC, Rel), // 0x50
+		I(EOR, Pos),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
+		I(EOR, ZpX),
+		I(LSR, ZpX),
+		I(ILL, Ill),
+		I(ILL, Ill),
+		I(EOR, AbY),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(EOR, AbX),
+		I(LSR, AbX),
 		I(ILL, Ill),
 
 		I(RTS, Imp), // 0x60
-		I(ADC, InX),
+		I(ADC, Pre),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -296,30 +297,30 @@ private:
 		I(ADC, Imm),
 		I(ROR, Acc),
 		I(ILL, Ill),
-		I(ILL, Ill),
+		I(JMP, Ind),
 		I(ADC, Abs),
 		I(ROR, Abs),
 		I(ILL, Ill),
 
 		I(BVS, Rel), // 0x70
+		I(ADC, Pos),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(ADC, ZpX),
+		I(ROR, ZpX),
 		I(ILL, Ill),
 		I(SEI, Imp),
+		I(ADC, AbY),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(ADC, AbX),
+		I(ROR, AbX),
 		I(ILL, Ill),
 
 		I(ILL, Ill), // 0x80
-		I(STA, InX),
+		I(STA, Pre),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(STY, ZoP),
@@ -336,24 +337,24 @@ private:
 		I(ILL, Ill),
 
 		I(BCC, Rel), // 0x90
+		I(STA, Pos),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(STY, ZpX),
+		I(STA, ZpX),
+		I(STX, ZpY),
 		I(ILL, Ill),
 		I(TYA, Imp),
-		I(ILL, Ill),
+		I(STA, AbY),
 		I(TXS, Imp),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
+		I(STA, AbX),
 		I(ILL, Ill),
 		I(ILL, Ill),
 
 		I(LDY, Imm), // 0xA0
-		I(LDA, InX),
+		I(LDA, Pre),
 		I(LDX, Imm),
 		I(ILL, Ill),
 		I(LDY, ZoP),
@@ -370,24 +371,24 @@ private:
 		I(ILL, Ill),
 
 		I(BCS, Rel), // 0xB0
+		I(LDA, Pos),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(LDY, ZpX),
 		I(LDA, ZpX),
-		I(ILL, Ill),
+		I(LDX, ZpY),
 		I(ILL, Ill),
 		I(CLV, Imp),
-		I(ILL, Ill),
+		I(LDA, AbY),
 		I(TSX, Imp),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(LDY, AbX),
+		I(LDA, AbX),
+		I(LDX, AbY),
 		I(ILL, Ill),
 
 		I(CPY, Imm), // 0xC0
-		I(CMP, InX),
+		I(CMP, Pre),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(CPY, ZoP),
@@ -404,24 +405,24 @@ private:
 		I(ILL, Ill),
 
 		I(BNE, Rel), // 0xD0
+		I(CMP, Pos),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(CMP, ZpX),
+		I(DEC, ZpX),
 		I(ILL, Ill),
 		I(CLD, Imp),
+		I(CMP, AbY),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(CMP, AbX),
+		I(DEC, AbX),
 		I(ILL, Ill),
 
 		I(CPX, Imm), // 0xE0
-		I(SBC, InX),
+		I(SBC, Pre),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(CPX, ZoP),
@@ -438,20 +439,20 @@ private:
 		I(ILL, Ill),
 
 		I(BEQ, Rel), // 0xF0
+		I(SBC, Pos),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(SBC, ZpX),
+		I(INC, ZpX),
 		I(ILL, Ill),
 		I(SED, Imp),
+		I(SBC, AbY),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(SBC, AbX),
+		I(INC, AbX),
 		I(ILL, Ill),
 	};
 

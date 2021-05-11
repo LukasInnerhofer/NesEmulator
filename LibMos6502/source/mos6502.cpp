@@ -82,6 +82,11 @@ uint16_t Mos6502::read16(uint16_t addr)
 	return (read8(addr + 1) << 8) | read8(addr);
 }
 
+uint16_t Mos6502::readPage16(uint16_t addr)
+{
+	return (read8((addr + 1) & 0xFF) << 8) | read8(addr);
+}
+
 uint8_t Mos6502::readArg8(uint16_t addr)
 {
 	++m_newPc;
@@ -175,12 +180,12 @@ uint16_t Mos6502::readAddress()
 
 	case AddressMode::Pre:
 		addr = (readArg8(m_pc + 1) + m_x) & 0xFF;
-		addr = (read8((addr + 1) & 0xFF) << 8) | read8(addr);
+		addr = readPage16(addr);
 		break;
 
 	case AddressMode::Pos:
 		addr = readArg8(m_pc + 1);
-		addr = (read8((addr + 1) & 0xFF) << 8) | read8(addr);
+		addr = readPage16(addr);
 		if ((((addr & 0xFF) + m_y) & 0xFF00) != 0)
 		{
 			m_pageCrossed = true;
@@ -199,11 +204,6 @@ uint16_t Mos6502::readAddress()
 		{
 			addr = read16(addr);
 		}
-		break;
-
-	case AddressMode::InX:
-		addr = (readArg8(m_pc + 1) + m_x) & 0xFF;
-		addr = read8((addr + 1) & 0xFF) << 8 | read8(addr);
 		break;
 
 	default:
