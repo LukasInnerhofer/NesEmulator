@@ -123,6 +123,11 @@ uint16_t Mos6502::pull16()
 	return data;
 }
 
+void Mos6502::pullStatus()
+{
+	m_status = (pull8() & 0xCF) | (m_status.to_ulong() & 0x30);
+}
+
 uint16_t Mos6502::readAddress()
 {
 	uint16_t addr{0};
@@ -130,7 +135,8 @@ uint16_t Mos6502::readAddress()
 	switch (m_addrMode)
 	{
 	case AddressMode::Abs:
-		++m_newPc;
+		addr = readArg16(m_pc + 1);
+		break;
 	case AddressMode::Rel:
 	case AddressMode::Imm:
 		addr = m_pc + 1;
@@ -195,6 +201,11 @@ uint16_t Mos6502::readAddress()
 		}
 		break;
 
+	case AddressMode::InX:
+		addr = (readArg8(m_pc + 1) + m_x) & 0xFF;
+		addr = read8((addr + 1) & 0xFF) << 8 | read8(addr);
+		break;
+
 	default:
 		addr = 0;
 		break;
@@ -205,8 +216,8 @@ uint16_t Mos6502::readAddress()
 
 void Mos6502::setNZ(uint8_t src)
 {
-	m_status[StatusBits::Zero] = src == 0;
 	m_status[StatusBits::Negative] = src & 0x80;
+	m_status[StatusBits::Zero] = src == 0;
 }
 
 void Mos6502::ADC()
@@ -350,13 +361,13 @@ void Mos6502::EOR()
 
 void Mos6502::JMP()
 {
-	m_newPc = read16(readAddress());
+	m_newPc = readAddress();
 }
 
 void Mos6502::JSR()
 {
 	push16(m_pc + 2);
-	m_newPc = read16(readAddress());
+	m_newPc = readAddress();
 }
 
 void Mos6502::LSR()
@@ -414,8 +425,8 @@ void Mos6502::ROR()
 	if (m_addrMode == AddressMode::Acc)
 	{
 		const bool oldCarry{m_status[StatusBits::Carry]};
-		m_status[StatusBits::Carry] = m_acc & 0x80;
-		m_acc = (m_acc >> 1) | static_cast<uint8_t>(oldCarry);
+		m_status[StatusBits::Carry] = m_acc & 0x01;
+		m_acc = (m_acc >> 1) | (static_cast<uint8_t>(oldCarry) << 7);
 		setNZ(m_acc);
 	}
 	else
@@ -423,16 +434,16 @@ void Mos6502::ROR()
 		const uint16_t addr{readAddress()};
 		uint8_t src{read8(addr)};
 		const bool oldCarry{m_status[StatusBits::Carry]};
-		m_status[StatusBits::Carry] = src & 0x80;
-		write8(addr, src = (src >> 1) | static_cast<uint8_t>(oldCarry));
+		m_status[StatusBits::Carry] = src & 0x01;
+		write8(addr, src = (src >> 1) | (static_cast<uint8_t>(oldCarry) << 7));
 		setNZ(src);
 	}
 }
 
 void Mos6502::RTI()
 {
-	m_status = pull16();
-	m_newPc = pull8();
+	pullStatus();
+	m_newPc = pull16();
 }
 
 void Mos6502::RTS()
@@ -462,7 +473,7 @@ void Mos6502::TXA()
 
 void Mos6502::TXS()
 {
-	setNZ(m_sp = m_x);
+	m_sp = m_x;
 }
 
 void Mos6502::TYA()
@@ -587,7 +598,7 @@ void Mos6502::PLA()
 }
 void Mos6502::PLP()
 {
-	m_status = pull8();
+	pullStatus();
 }
 
 void Mos6502::ILL()

@@ -41,9 +41,8 @@ private:
 	uint8_t m_x, m_y;
 
 	std::bitset<8> m_status;
-	class StatusBits
+	struct StatusBits
 	{
-	public:
 		static constexpr size_t 
 			Carry { 0 }, 
 			Zero { 1 }, 
@@ -51,6 +50,8 @@ private:
 			Decimal { 3 }, 
 			Overflow { 6 }, 
 			Negative { 7 };
+
+		StatusBits() = delete;
 	};
 
 	uint8_t m_cycles;
@@ -61,7 +62,7 @@ private:
 	static constexpr uint8_t accDefault{0};
 	static constexpr uint8_t xDefault{0};
 	static constexpr uint8_t yDefault{0};
-	static constexpr uint8_t statusDefault{0x34};
+	static constexpr uint8_t statusDefault{0x24};
 	static constexpr uint16_t stackOffset{0x100};
 	static constexpr uint32_t clockMin{1000000}; // 1MHz
 	static constexpr uint32_t clockMax{3000000}; // 3MHz;
@@ -81,6 +82,7 @@ private:
 	void push16(uint16_t data);
 	uint8_t pull8();
 	uint16_t pull16();
+	void pullStatus();
 
 	uint16_t readAddress();
 
@@ -160,7 +162,7 @@ private:
 
 	void ILL();
 
-	enum class AddressMode { Acc, Imp, Rel, Imm, ZoP, ZpX, ZpY, Abs, AbX, AbY, Pre, Pos, Ill, Ind };
+	enum class AddressMode { Acc, Imp, Rel, Imm, ZoP, ZpX, ZpY, Abs, AbX, AbY, Pre, Pos, Ill, Ind, InX, InY };
 
 	AddressMode m_addrMode;
 
@@ -181,16 +183,16 @@ private:
 	std::vector<Instruction> m_instructions
 	{
 		I(ILL, Ill), // 0x00
+		I(ORA, InX),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(ORA, ZoP),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(PHP, Imp),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(ORA, Imm),
+		I(ASL, Acc),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -215,23 +217,23 @@ private:
 		I(ILL, Ill),
 
 		I(JSR, Abs), // 0x20
-		I(ILL, Ill),
+		I(AND, InX),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(BIT, ZoP),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(PLP, Imp),
-		I(AND, Imm),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(AND, ZoP), 
+		I(ILL, Ill), 
+		I(ILL, Ill), 
+		I(PLP, Imp), 
+		I(AND, Imm), 
+		I(ROL, Acc), 
+		I(ILL, Ill), 
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
 
-		I(ILL, Ill), // 0x30
+		I(BMI, Imp), // 0x30
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -248,17 +250,17 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 
-		I(ILL, Ill), // 0x40
+		I(RTI, Imp), // 0x40
+		I(EOR, InX),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(EOR, ZoP),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(PHA, Imp),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(EOR, Imm),
+		I(LSR, Acc),
 		I(ILL, Ill),
 		I(JMP, Abs),
 		I(ILL, Ill),
@@ -283,7 +285,7 @@ private:
 		I(ILL, Ill),
 
 		I(RTS, Imp), // 0x60
-		I(ILL, Ill),
+		I(ADC, InX),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -291,8 +293,8 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(PLA, Imp),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(ADC, Imm),
+		I(ROR, Acc),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -317,20 +319,20 @@ private:
 		I(ILL, Ill),
 
 		I(ILL, Ill), // 0x80
+		I(STA, InX),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(STY, ZoP),
 		I(STA, ZoP),
 		I(STX, Imm),
 		I(ILL, Ill),
+		I(DEY, Imp),
+		I(ILL, Ill),
+		I(TXA, Imp),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(STA, Abs),
+		I(STX, Abs),
 		I(ILL, Ill),
 
 		I(BCC, Rel), // 0x90
@@ -341,30 +343,30 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
+		I(TYA, Imp),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(TXS, Imp),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
 
-		I(ILL, Ill), // 0xA0
-		I(ILL, Ill),
+		I(LDY, Imm), // 0xA0
+		I(LDA, InX),
 		I(LDX, Imm),
 		I(ILL, Ill),
-		I(ILL, Ill),
+		I(LDY, ZoP),
 		I(LDA, ZoP),
+		I(LDX, ZoP),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(TAY, Imp),
 		I(LDA, Imm),
+		I(TAX, Imp),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(LDA, Abs),
+		I(LDX, Abs),
 		I(ILL, Ill),
 
 		I(BCS, Rel), // 0xB0
@@ -375,26 +377,26 @@ private:
 		I(LDA, ZpX),
 		I(ILL, Ill),
 		I(ILL, Ill),
+		I(CLV, Imp),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(TSX, Imp),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
 
-		I(ILL, Ill), // 0xC0
+		I(CPY, Imm), // 0xC0
+		I(CMP, InX),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(INY, Imp),
 		I(CMP, Imm),
-		I(ILL, Ill),
+		I(DEX, Imp),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
@@ -418,16 +420,16 @@ private:
 		I(ILL, Ill),
 		I(ILL, Ill),
 
-		I(ILL, Ill), // 0xE0
+		I(CPX, Imm), // 0xE0
+		I(SBC, InX),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
 		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
-		I(ILL, Ill),
+		I(INX, Imp),
+		I(SBC, Imm),
 		I(NOP, Imp),
 		I(ILL, Ill),
 		I(ILL, Ill),
