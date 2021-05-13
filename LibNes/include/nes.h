@@ -7,6 +7,10 @@
 #include <memory>
 #include <vector>
 
+#if defined(LIB_NES_LOG)
+#include <fstream>
+#endif
+
 #include "cpu_memory.h"
 #include "mos6502.h"
 #include "ppu.h"
@@ -23,7 +27,11 @@ public:
 	Nes();
 
 	void loadCartridge(std::istream& romStream);
-	void runFor(std::chrono::nanoseconds time);
+	void runFor(std::chrono::nanoseconds time
+#if defined(LIB_NES_LOG)
+		, std::ofstream& log
+#endif
+	);
 	void reset();
 
 private:

@@ -36,9 +36,17 @@ int main(int argc, char* argv[])
 		loop = false; 
 	}};
 
+#if defined(NES_EMULATOR_LOG)
+	auto log = std::ofstream("nes.log");
+#endif
+
 	while (loop)
 	{
-		nes.runFor(std::chrono::milliseconds(16));
+		nes.runFor(std::chrono::milliseconds(16)
+#if defined(NES_EMULATOR_LOG)
+			, log
+#endif
+		);
 	}
 
 	uiThread.join();

@@ -24,15 +24,15 @@ public:
 	Mos6502(std::shared_ptr<Memory> memory);
 
 	void reset();
-	void step();
+	void step(
+#if defined(LIB_MOS6502_LOG)
+		std::ofstream& log
+#endif
+	);
 
 	uint8_t getCycles();
 
 private:
-#if defined(LIB_MOS6502_LOG)
-	std::ofstream m_log;
-#endif
-
 	std::shared_ptr<Memory> m_memory;
 
 	uint16_t m_pc;

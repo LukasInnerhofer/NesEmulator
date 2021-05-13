@@ -8,10 +8,6 @@
 namespace LibMos6502
 {
 
-#if defined(LIB_MOS6502_LOG)
-static size_t instance{0};
-#endif
-
 Mos6502::Mos6502(std::shared_ptr<Memory> memory) :
 	m_memory{memory},
 	m_pc{pcDefault}, 
@@ -24,9 +20,6 @@ Mos6502::Mos6502(std::shared_ptr<Memory> memory) :
 	m_newPc{0},
 	m_addrMode{AddressMode::Abs}, 
 	m_pageCrossed{false}
-#if defined(LIB_MOS6502_LOG)
-	, m_log{"log" + std::to_string(instance++) + ".txt"}
-#endif
 {
 
 }
@@ -41,7 +34,11 @@ void Mos6502::reset()
 	m_pc = read16(resetVector);
 }
 
-void Mos6502::step()
+void Mos6502::step(
+#if defined(LIB_MOS6502_LOG)
+	std::ofstream& log
+#endif
+)
 {
 	m_cycles = 0;
 	const uint8_t opCode{read8(m_pc)};
@@ -50,14 +47,14 @@ void Mos6502::step()
 	const Instruction instruction{m_instructions[opCode]};
 
 #if defined(LIB_MOS6502_LOG)
-	m_log << std::hex << std::setfill('0') << std::setw(4) << std::uppercase << 
+	log << std::hex << std::setfill('0') << std::setw(4) << std::uppercase << 
 		m_pc << " " << std::setw(2) << static_cast<int>(opCode) << " " <<
 		instruction.m_name << " " << std::right <<
 		"A:" << std::setw(2) << static_cast<int>(m_acc) << " " << 
 		"X:" << std::setw(2) << static_cast<int>(m_x) << " " << 
 		"Y:" << std::setw(2) << static_cast<int>(m_y) << " " << 
 		"P:" << std::setw(2) << (m_status.to_ulong() & 0xEF) << " " << 
-		"SP:" << std::setw(2) << static_cast<int>(m_sp) << "\n";
+		"SP:" << std::setw(2) << static_cast<int>(m_sp);
 #endif
 
 	m_addrMode = instruction.m_addressMode;

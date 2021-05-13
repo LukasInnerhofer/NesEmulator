@@ -95,12 +95,24 @@ void Nes::reset()
 	m_cpu->reset();
 }
 
-void Nes::runFor(std::chrono::nanoseconds time)
+void Nes::runFor(std::chrono::nanoseconds time
+#if defined(LIB_NES_LOG)
+	, std::ofstream& log
+#endif
+)
 {
 	const std::chrono::time_point start = std::chrono::steady_clock::now();
 	for(int64_t iterations{time / cpuCycleTime}; iterations > 0; iterations -= m_cpu->getCycles())
 	{
-		m_cpu->step();
+		m_cpu->step(
+#if defined(LIB_NES_LOG)
+			log
+#endif
+		);
+
+#if defined(LIB_NES_LOG)
+		log << "\n";
+#endif
 	}
 	std::this_thread::sleep_until(start + time);
 }
