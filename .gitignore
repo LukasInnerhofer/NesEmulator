@@ -4,3 +4,4 @@ LibMos6502/test/test.o
 CMakeFiles/
 LibMos6502/CmakeFiles
 LibNes/CMakeFiles
+nes.log
