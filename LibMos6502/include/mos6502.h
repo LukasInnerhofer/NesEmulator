@@ -64,8 +64,6 @@ private:
 	static constexpr uint8_t yDefault{0};
 	static constexpr uint8_t statusDefault{0x24};
 	static constexpr uint16_t stackOffset{0x100};
-	static constexpr uint32_t clockMin{1000000}; // 1MHz
-	static constexpr uint32_t clockMax{3000000}; // 3MHz;
 
 	static constexpr uint16_t nmiVector{0xFFFA};
 	static constexpr uint16_t resetVector{0xFFFC};
