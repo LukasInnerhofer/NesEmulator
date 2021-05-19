@@ -7,12 +7,13 @@ add_library(${LIB_NAME}
     source/mapper.cpp
     source/nes.cpp
     source/nrom.cpp
+    source/ricoh_2c02.cpp
     include/cartridge.h
     include/cpu_memory.h
     include/mapper.h
     include/nes.h
     include/nrom.h
-    include/ppu.h
+    include/ricoh_2c02.h
 )
 
 target_include_directories(${LIB_NAME} PUBLIC include)

@@ -13,7 +13,7 @@
 
 #include "cpu_memory.h"
 #include "mos6502.h"
-#include "ppu.h"
+#include "ricoh_2c02.h"
 #include "cartridge.h"
 #include "mapper.h"
 #include "nrom.h"
@@ -52,7 +52,7 @@ private:
 	std::shared_ptr<CpuMemory> m_cpuMemory;
 	std::unique_ptr<LibMos6502::Mos6502> m_cpu;
 	static constexpr std::chrono::nanoseconds cpuCycleTime{static_cast<uint16_t>(1000000000. / 1790000)}; // 1/(1.79 MHz)
-	std::shared_ptr<Ppu> m_ppu;
+	std::unique_ptr<Ricoh2C02> m_ppu;
 };
 
 } // namespace LibNes

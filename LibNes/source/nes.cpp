@@ -1,4 +1,5 @@
 #include <cstring>
+#include <iomanip>
 #include <thread>
 
 #include "nes.h"
@@ -13,6 +14,7 @@ Nes::Nes()
 	m_ram = std::make_shared<std::vector<uint8_t>>(ramSize);
 	m_cpuMemory = std::make_shared<CpuMemory>(m_ram);
 	m_cpu = std::make_unique<LibMos6502::Mos6502>(m_cpuMemory);
+	m_ppu = std::make_unique<Ricoh2C02>();
 }
 
 void Nes::loadCartridge(std::istream& romStream)
@@ -102,16 +104,24 @@ void Nes::runFor(std::chrono::nanoseconds time
 )
 {
 	const std::chrono::time_point start = std::chrono::steady_clock::now();
-	for(int64_t iterations{time / cpuCycleTime}; iterations > 0; iterations -= m_cpu->getCycles())
+	uint16_t lastCycle;
+	for(int64_t iterator{time / cpuCycleTime}; iterator > 0; iterator -= m_cpu->getCycles())
 	{
 		m_cpu->step(
 #if defined(LIB_NES_LOG)
 			log
 #endif
 		);
+		lastCycle = m_ppu->getCycle();
+		for(uint8_t iteratorPpu = 0; iteratorPpu < 3 * m_cpu->getCycles(); ++iteratorPpu)
+		{
+			m_ppu->step();
+		}
 
 #if defined(LIB_NES_LOG)
-		log << "\n";
+		log << 
+			" CYC:" << std::setw(3) << std::setfill(' ') << std::right << std::dec << lastCycle << 
+			" SL:" << std::left << m_ppu->getScanline() << "\n";
 #endif
 	}
 	std::this_thread::sleep_until(start + time);
