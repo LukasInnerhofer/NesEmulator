@@ -104,7 +104,12 @@ void Nes::runFor(std::chrono::nanoseconds time
 )
 {
 	const std::chrono::time_point start = std::chrono::steady_clock::now();
+
+#if defined(LIB_NES_LOG)
 	uint16_t lastCycle;
+	int16_t lastScanline;
+#endif
+
 	for(int64_t iterator{time / cpuCycleTime}; iterator > 0; iterator -= m_cpu->getCycles())
 	{
 		m_cpu->step(
@@ -112,7 +117,12 @@ void Nes::runFor(std::chrono::nanoseconds time
 			log
 #endif
 		);
+
+#if defined(LIB_NES_LOG)
 		lastCycle = m_ppu->getCycle();
+		lastScanline = m_ppu->getScanline();
+#endif
+
 		for(uint8_t iteratorPpu = 0; iteratorPpu < 3 * m_cpu->getCycles(); ++iteratorPpu)
 		{
 			m_ppu->step();
@@ -121,7 +131,7 @@ void Nes::runFor(std::chrono::nanoseconds time
 #if defined(LIB_NES_LOG)
 		log << 
 			" CYC:" << std::setw(3) << std::setfill(' ') << std::right << std::dec << lastCycle << 
-			" SL:" << std::left << m_ppu->getScanline() << "\n";
+			" SL:" << std::left << lastScanline << "\n";
 #endif
 	}
 	std::this_thread::sleep_until(start + time);

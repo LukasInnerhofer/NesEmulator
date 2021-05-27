@@ -48,8 +48,8 @@ void Mos6502::step(
 
 #if defined(LIB_MOS6502_LOG)
 	log << std::hex << std::setfill('0') << std::setw(4) << std::uppercase << 
-		m_pc << " " << std::setw(2) << static_cast<int>(opCode) << " " <<
-		instruction.m_name << " " << std::right <<
+		m_pc << " " << std::setw(2) << std::right << static_cast<int>(opCode) << " " <<
+		instruction.m_name << " " <<
 		"A:" << std::setw(2) << static_cast<int>(m_acc) << " " << 
 		"X:" << std::setw(2) << static_cast<int>(m_x) << " " << 
 		"Y:" << std::setw(2) << static_cast<int>(m_y) << " " << 
@@ -59,6 +59,8 @@ void Mos6502::step(
 
 	m_addrMode = instruction.m_addressMode;
 	(this->*instruction.m_instruction)();
+
+	m_cycles += m_cycles == 1;
 
 	m_pc = m_newPc;
 }
@@ -176,6 +178,7 @@ uint16_t Mos6502::readAddress()
 		break;
 
 	case AddressMode::Pre:
+		++m_cycles; // due to post increment
 		addr = (readArg8(m_pc + 1) + m_x) & 0xFF;
 		addr = readPage16(addr);
 		break;
@@ -185,6 +188,7 @@ uint16_t Mos6502::readAddress()
 		addr = readPage16(addr);
 		if ((((addr & 0xFF) + m_y) & 0xFF00) != 0)
 		{
+			++m_cycles;
 			m_pageCrossed = true;
 		}
 		addr += m_y;
@@ -264,6 +268,7 @@ void Mos6502::ASL()
 		const uint16_t addr{readAddress()};
 		uint8_t src{read8(addr)};
 		m_status[StatusBits::Carry] = src & 0x80;
+		++m_cycles; // rmw instructions take one extra cycle during modify
 		write8(addr, src <<= 1);
 		setNZ(src);
 	}
@@ -309,12 +314,14 @@ void Mos6502::CPY()
 
 uint8_t Mos6502::decrement(uint8_t src)
 {
+	++m_cycles; // rmw instructions take one extra cycle during modify
 	setNZ(--src);
 	return src;
 }
 
 uint8_t Mos6502::increment(uint8_t src)
 {
+	++m_cycles; // rmw instructions take one extra cycle during modify
 	setNZ(++src);
 	return src;
 }
@@ -363,6 +370,7 @@ void Mos6502::JMP()
 
 void Mos6502::JSR()
 {
+	++m_cycles; // Due to stack push
 	push16(m_pc + 2);
 	m_newPc = readAddress();
 }
@@ -380,6 +388,7 @@ void Mos6502::LSR()
 		const uint16_t addr{readAddress()};
 		uint8_t src{read8(addr)};
 		m_status[StatusBits::Carry] = src & 0x01;
+		++m_cycles; // rmw instructions take one extra cycle during modify
 		write8(addr, src >>= 1);
 		m_status[StatusBits::Zero] = src == 0;
 	}
@@ -412,6 +421,7 @@ void Mos6502::ROL()
 		uint8_t src{read8(addr)};
 		const bool oldCarry{m_status[StatusBits::Carry]};
 		m_status[StatusBits::Carry] = src & 0x80;
+		++m_cycles; // rmw instructions take one extra cycle during modify
 		write8(addr, src = (src << 1) | static_cast<uint8_t>(oldCarry));
 		setNZ(src);
 	}
@@ -432,6 +442,7 @@ void Mos6502::ROR()
 		uint8_t src{read8(addr)};
 		const bool oldCarry{m_status[StatusBits::Carry]};
 		m_status[StatusBits::Carry] = src & 0x01;
+		++m_cycles; // rmw instructions take one extra cycle during modify
 		write8(addr, src = (src >> 1) | (static_cast<uint8_t>(oldCarry) << 7));
 		setNZ(src);
 	}
@@ -439,12 +450,14 @@ void Mos6502::ROR()
 
 void Mos6502::RTI()
 {
+	m_cycles += 2; // stack pull
 	pullStatus();
 	m_newPc = pull16();
 }
 
 void Mos6502::RTS()
 {
+	m_cycles += 2 + 1; // stack pull + post increment of the pc
 	m_newPc = pull16() + 1;
 }
 
@@ -527,8 +540,9 @@ void Mos6502::branch(bool condition)
 	if (condition)
 	{
 		++m_cycles;
+		const uint16_t oldPc{m_pc};
 		m_newPc += read8(readAddress());
-		m_cycles += 2 * ((m_pc & 0xFF00) != (m_newPc & 0xFF00));
+		m_cycles += ((oldPc + 2) & 0xFF00) != (m_newPc & 0xFF00);
 	}
 	else
 	{
@@ -583,18 +597,22 @@ void Mos6502::LDY()
 
 void Mos6502::PHA()
 {
+	++m_cycles; // stack push
 	push8(m_acc);
 }
 void Mos6502::PHP()
 {
+	++m_cycles; // stack push
 	push8(static_cast<uint8_t>(m_status.to_ulong()) | 0x30);
 }
 void Mos6502::PLA()
 {
+	m_cycles += 2; // stack pull
 	setNZ(m_acc = pull8());
 }
 void Mos6502::PLP()
 {
+	m_cycles += 2; // stack pull
 	pullStatus();
 }
 
