@@ -18,8 +18,7 @@ Mos6502::Mos6502(std::shared_ptr<Memory> memory) :
 	m_status{statusDefault},
 	m_cycles{0}, 
 	m_newPc{0},
-	m_addrMode{AddressMode::Abs}, 
-	m_pageCrossed{false}
+	m_addrMode{AddressMode::Abs}
 {
 
 }
@@ -47,8 +46,8 @@ void Mos6502::step(
 	const Instruction instruction{m_instructions[opCode]};
 
 #if defined(LIB_MOS6502_LOG)
-	log << std::hex << std::setfill('0') << std::setw(4) << std::uppercase << 
-		m_pc << " " << std::setw(2) << std::right << static_cast<int>(opCode) << " " <<
+	log << std::hex << std::setfill('0') << std::setw(4) << std::right << std::uppercase << 
+		m_pc << " " << std::setw(2) << static_cast<int>(opCode) << " " <<
 		instruction.m_name << " " <<
 		"A:" << std::setw(2) << static_cast<int>(m_acc) << " " << 
 		"X:" << std::setw(2) << static_cast<int>(m_x) << " " << 
@@ -132,7 +131,7 @@ void Mos6502::pullStatus()
 	m_status = (pull8() & 0xCF) | (m_status.to_ulong() & 0x30);
 }
 
-uint16_t Mos6502::readAddress()
+uint16_t Mos6502::readAddress(bool assumePageCross = false)
 {
 	uint16_t addr{0};
 
@@ -152,27 +151,29 @@ uint16_t Mos6502::readAddress()
 		break;
 
 	case AddressMode::ZpX:
+		++m_cycles;
 		addr = (readArg8(m_pc + 1) + m_x) & 0xFF;
 		break;
 
 	case AddressMode::ZpY:
+		++m_cycles;
 		addr = (readArg8(m_pc + 1) + m_y) & 0xFF;
 		break;
 
 	case AddressMode::AbX:
 		addr = readArg16(m_pc + 1);
-		if ((((addr & 0xFF) + m_x) & 0xFF00) != 0)
+		if ((((addr & 0xFF) + m_x) & 0xFF00) != 0 || assumePageCross)
 		{
-			m_pageCrossed = true;
+			++m_cycles;
 		}
 		addr += m_x;
 		break;
 
 	case AddressMode::AbY:
 		addr = readArg16(m_pc + 1);
-		if ((((addr & 0xFF) + m_y) & 0xFF00) != 0)
+		if ((((addr & 0xFF) + m_y) & 0xFF00) != 0 || assumePageCross)
 		{
-			m_pageCrossed = true;
+			++m_cycles;
 		}
 		addr += m_y;
 		break;
@@ -186,10 +187,9 @@ uint16_t Mos6502::readAddress()
 	case AddressMode::Pos:
 		addr = readArg8(m_pc + 1);
 		addr = readPage16(addr);
-		if ((((addr & 0xFF) + m_y) & 0xFF00) != 0)
+		if ((((addr & 0xFF) + m_y) & 0xFF00) != 0 || assumePageCross)
 		{
 			++m_cycles;
-			m_pageCrossed = true;
 		}
 		addr += m_y;
 		break;
@@ -265,7 +265,7 @@ void Mos6502::ASL()
 	}
 	else
 	{
-		const uint16_t addr{readAddress()};
+		const uint16_t addr{readAddress(true)};
 		uint8_t src{read8(addr)};
 		m_status[StatusBits::Carry] = src & 0x80;
 		++m_cycles; // rmw instructions take one extra cycle during modify
@@ -328,7 +328,7 @@ uint8_t Mos6502::increment(uint8_t src)
 
 void Mos6502::DEC()
 {
-	const uint16_t addr{readAddress()};
+	const uint16_t addr{readAddress(true)};
 	write8(addr, decrement(read8(addr)));
 }
 
@@ -344,7 +344,7 @@ void Mos6502::DEY()
 
 void Mos6502::INC()
 {
-	const uint16_t addr{readAddress()};
+	const uint16_t addr{readAddress(true)};
 	write8(addr, increment(read8(addr)));
 }
 
@@ -385,7 +385,7 @@ void Mos6502::LSR()
 	}
 	else
 	{
-		const uint16_t addr{readAddress()};
+		const uint16_t addr{readAddress(true)};
 		uint8_t src{read8(addr)};
 		m_status[StatusBits::Carry] = src & 0x01;
 		++m_cycles; // rmw instructions take one extra cycle during modify
@@ -417,7 +417,7 @@ void Mos6502::ROL()
 	}
 	else
 	{
-		const uint16_t addr{readAddress()};
+		const uint16_t addr{readAddress(true)};
 		uint8_t src{read8(addr)};
 		const bool oldCarry{m_status[StatusBits::Carry]};
 		m_status[StatusBits::Carry] = src & 0x80;
@@ -438,7 +438,7 @@ void Mos6502::ROR()
 	}
 	else
 	{
-		const uint16_t addr{readAddress()};
+		const uint16_t addr{readAddress(true)};
 		uint8_t src{read8(addr)};
 		const bool oldCarry{m_status[StatusBits::Carry]};
 		m_status[StatusBits::Carry] = src & 0x01;
@@ -493,7 +493,7 @@ void Mos6502::TYA()
 
 void Mos6502::STA()
 {
-	write8(readAddress(), m_acc);
+	write8(readAddress(true), m_acc);
 }
 
 void Mos6502::STX()
