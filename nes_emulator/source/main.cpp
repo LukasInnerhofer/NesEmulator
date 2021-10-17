@@ -4,7 +4,7 @@
 #include <iostream>
 #include <thread>
 
-#include "nes.h"
+#include "lib_nes/nes.h"
 
 int main(int argc, char* argv[])
 {

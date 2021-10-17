@@ -3,7 +3,7 @@
 #include <string>
 #include <sstream>
 
-#include "mos6502.h"
+#include "lib_mos6502/mos6502.h"
 
 namespace LibMos6502
 {

@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "mapper.h"
-#include "mos6502_memory.h"
+#include "lib_mos6502/memory.h"
 
 namespace LibNes
 {

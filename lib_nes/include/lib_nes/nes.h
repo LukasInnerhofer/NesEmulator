@@ -12,7 +12,7 @@
 #endif
 
 #include "cpu_memory.h"
-#include "mos6502.h"
+#include "lib_mos6502/mos6502.h"
 #include "ricoh_2c02.h"
 #include "cartridge.h"
 #include "mapper.h"

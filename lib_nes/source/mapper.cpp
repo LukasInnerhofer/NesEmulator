@@ -1,4 +1,4 @@
-#include "mapper.h"
+#include "lib_nes/mapper.h"
 
 namespace LibNes
 {

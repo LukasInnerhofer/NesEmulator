@@ -5,3 +5,4 @@ CMakeFiles/
 LibMos6502/CmakeFiles
 LibNes/CMakeFiles
 nes.log
+.cache

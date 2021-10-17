@@ -1,5 +1,4 @@
-#ifndef MOS6502_MEMORY_H
-#define MOS6502_MEMORY_H
+#pragma once
 
 #include <cstdint>
 
@@ -14,5 +13,3 @@ class Memory
 };
 
 }
-
-#endif // MOS_6502_MEMORY_H

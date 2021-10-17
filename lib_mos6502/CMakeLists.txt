@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 3.13.4)
 
-set(LIB_NAME LibMos6502)
+set(LIB_NAME lib_mos6502)
+
+project(${LIB_NAME})
 
 add_library(${LIB_NAME}
     source/mos6502.cpp
-    include/mos6502.h
-    include/mos6502_memory.h)
+    include/${LIB_NAME}/mos6502.h
+    include/${LIB_NAME}/memory.h)
 
 target_include_directories(${LIB_NAME} PUBLIC include)
 

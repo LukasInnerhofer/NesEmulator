@@ -1,4 +1,4 @@
-#include "ricoh_2c02.h"
+#include "lib_nes/ricoh_2c02.h"
 
 namespace LibNes
 {
