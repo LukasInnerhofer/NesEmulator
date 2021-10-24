@@ -1,8 +1,7 @@
 build/
-LibMos6502/test/test.nes
-LibMos6502/test/test.o
-CMakeFiles/
-LibMos6502/CmakeFiles
-LibNes/CMakeFiles
+libmos6502/test/test.nes
+libmos6502/test/test.o
+libmos6502/CmakeFiles
+libnes/CMakeFiles
 nes.log
 .cache
