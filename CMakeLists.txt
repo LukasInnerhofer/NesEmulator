@@ -17,9 +17,9 @@ endif()
 set(INSTALL_PATH bin/${PROJECT_NAME})
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${INSTALL_PATH})
 
+add_subdirectory(libutilities)
 add_subdirectory(libmos6502)
 add_subdirectory(libnes)
-add_subdirectory(libutilities)
 set(LIBGRAPHICS_INSTALL_PATH ${INSTALL_PATH})
 add_subdirectory(libgraphics)
 

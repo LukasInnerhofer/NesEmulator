@@ -14,6 +14,7 @@
 #endif
 
 #include "libmos6502/memory.h"
+#include "libutilities/non_null.h"
 
 namespace LibMos6502
 {
@@ -21,7 +22,7 @@ namespace LibMos6502
 class Mos6502
 {
 public:
-	Mos6502(std::shared_ptr<Memory> memory);
+	Mos6502(NonNullSharedPtr<Memory> memory);
 
 	void reset();
 	void step(
@@ -33,7 +34,7 @@ public:
 	uint8_t getCycles();
 
 private:
-	std::shared_ptr<Memory> m_memory;
+	NonNullSharedPtr<Memory> m_memory;
 
 	uint16_t m_pc;
 	uint8_t m_sp;

@@ -9,6 +9,9 @@ add_library(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
+get_target_property(LIBUTILITIES_INCLUDE_DIRECTORIES libutilities INCLUDE_DIRECTORIES)
+target_include_directories(${PROJECT_NAME} PRIVATE ${LIBUTILITIES_INCLUDE_DIRECTORIES})
+
 if(LOG)
     target_compile_definitions(${PROJECT_NAME} PUBLIC LIBMOS6502_LOG)
 endif()

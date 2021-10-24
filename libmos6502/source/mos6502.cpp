@@ -8,7 +8,7 @@
 namespace LibMos6502
 {
 
-Mos6502::Mos6502(std::shared_ptr<Memory> memory) :
+Mos6502::Mos6502(NonNullSharedPtr<Memory> memory) :
 	m_memory{memory},
 	m_pc{pcDefault}, 
 	m_sp{spDefault}, 
