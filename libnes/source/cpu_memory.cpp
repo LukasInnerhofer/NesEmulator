@@ -1,4 +1,4 @@
-#include "lib_nes/cpu_memory.h"
+#include "libnes/cpu_memory.h"
 
 namespace LibNes
 {

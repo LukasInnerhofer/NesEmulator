@@ -12,11 +12,11 @@
 #endif
 
 #include "cpu_memory.h"
-#include "lib_mos6502/mos6502.h"
-#include "ricoh_2c02.h"
-#include "cartridge.h"
-#include "mapper.h"
-#include "nrom.h"
+#include "libmos6502/mos6502.h"
+#include "libnes/ricoh_2c02.h"
+#include "libnes/cartridge.h"
+#include "libnes/mapper.h"
+#include "libnes/nrom.h"
 
 namespace LibNes
 {
@@ -24,7 +24,7 @@ namespace LibNes
 class Nes
 {
 public:
-	Nes();
+	Nes(std::shared_ptr<Screen> screen);
 
 	void loadCartridge(std::istream& romStream);
 	void runFor(std::chrono::nanoseconds time

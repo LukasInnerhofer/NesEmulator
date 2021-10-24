@@ -1,11 +1,12 @@
-#include "lib_nes/ricoh_2c02.h"
+#include "libnes/ricoh_2c02.h"
 
 namespace LibNes
 {
 
-Ricoh2C02::Ricoh2C02() : 
+Ricoh2C02::Ricoh2C02(std::shared_ptr<Screen> screen) : 
     m_scanline{scanlineDefault},
-    m_cycle{cycleDefault}
+    m_cycle{cycleDefault},
+    m_screen{screen}
 {
 
 }

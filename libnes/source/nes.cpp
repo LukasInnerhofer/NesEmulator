@@ -2,19 +2,19 @@
 #include <iomanip>
 #include <thread>
 
-#include "lib_nes/nes.h"
-#include "lib_nes/cpu_memory.h"
+#include "libnes/nes.h"
+#include "libnes/cpu_memory.h"
 
 namespace LibNes
 {
 
-Nes::Nes()
+Nes::Nes(std::shared_ptr<Screen> screen)
 {
 	m_cartridge = nullptr;
 	m_ram = std::make_shared<std::vector<uint8_t>>(ramSize);
 	m_cpuMemory = std::make_shared<CpuMemory>(m_ram);
 	m_cpu = std::make_unique<LibMos6502::Mos6502>(m_cpuMemory);
-	m_ppu = std::make_unique<Ricoh2C02>();
+	m_ppu = std::make_unique<Ricoh2C02>(screen);
 }
 
 void Nes::loadCartridge(std::istream& romStream)

@@ -1,4 +1,4 @@
-#include "lib_nes/nrom.h"
+#include "libnes/nrom.h"
 
 namespace LibNes
 {
