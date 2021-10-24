@@ -5,3 +5,4 @@ libmos6502/CmakeFiles
 libnes/CMakeFiles
 nes.log
 .cache
+.vscode
