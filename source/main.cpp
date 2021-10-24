@@ -4,7 +4,9 @@
 #include <iostream>
 #include <thread>
 
-#include "lib_nes/nes.h"
+#include "libnes/nes.h"
+
+#include "screen_libgraphics.h"
 
 int main(int argc, char* argv[])
 {
@@ -15,7 +17,10 @@ int main(int argc, char* argv[])
 	}
 	std::string filePath{argv[1]};
 
-	LibNes::Nes nes;
+	LibNes::Nes nes{
+		std::make_shared<NesEmulator::ScreenLibGraphics>(
+			std::make_shared<LibGraphics::Window>("NesEmulator")
+		)};
 
 	std::ifstream file{filePath, std::ios::in | std::ios::binary | std::ios::ate};
 
