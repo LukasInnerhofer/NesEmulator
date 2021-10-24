@@ -13,7 +13,7 @@
 #include <fstream>
 #endif
 
-#include "lib_mos6502/memory.h"
+#include "libmos6502/memory.h"
 
 namespace LibMos6502
 {
