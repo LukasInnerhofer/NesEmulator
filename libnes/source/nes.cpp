@@ -8,13 +8,14 @@
 namespace LibNes
 {
 
-Nes::Nes(std::shared_ptr<Screen> screen)
+Nes::Nes(NonNullSharedPtr<Screen> screen) :
+	m_ram{std::make_shared<std::vector<uint8_t>>(ramSize)},
+	m_cpuMemory{std::make_shared<CpuMemory>(m_ram)},
+	m_cpu{std::make_unique<LibMos6502::Mos6502>(NonNullSharedPtr<LibMos6502::Memory>{m_cpuMemory})},
+	m_ppu{std::make_unique<Ricoh2C02>(screen)},
+	m_cartridge{}
 {
-	m_cartridge = nullptr;
-	m_ram = std::make_shared<std::vector<uint8_t>>(ramSize);
-	m_cpuMemory = std::make_shared<CpuMemory>(m_ram);
-	m_cpu = std::make_unique<LibMos6502::Mos6502>(m_cpuMemory);
-	m_ppu = std::make_unique<Ricoh2C02>(screen);
+
 }
 
 void Nes::loadCartridge(std::istream& romStream)
@@ -84,12 +85,12 @@ void Nes::loadCartridge(std::istream& romStream)
 	romStream.read(reinterpret_cast<char*>(prgRom.data()), prgRom.size());
 	romStream.read(reinterpret_cast<char*>(chrRom.data()), chrRom.size());
 
-	m_cartridge = std::make_unique<Cartridge>(
+	m_cartridge.emplace(std::make_unique<Cartridge>(
 		std::move(trainer),
 		std::move(prgRom), 
 		std::move(chrRom), 
-		[&](std::shared_ptr<Cartridge::Rom> rom) { return m_mapperList[mapperNumber](rom, mirroring); });
-	m_cpuMemory->setMapper(m_cartridge->m_mapper);
+		[&](NonNullSharedPtr<Cartridge::Rom> rom) { return m_mapperList[mapperNumber](rom, mirroring); }));
+	m_cpuMemory->setMapper((*m_cartridge)->m_mapper);
 }
 
 void Nes::reset()

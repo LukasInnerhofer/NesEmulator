@@ -5,6 +5,8 @@
 #include <functional>
 #include <memory>
 
+#include "libutilities/non_null.h"
+
 namespace LibNes
 {
 
@@ -36,17 +38,18 @@ struct Cartridge
 		}
 	};
 
-	std::shared_ptr<Rom> m_rom;
-	std::shared_ptr<Mapper> m_mapper;
+	NonNullSharedPtr<Rom> m_rom;
+	NonNullSharedPtr<Mapper> m_mapper;
 
 	Cartridge(
 		std::vector<uint8_t>&& trainer, 
 		std::vector<uint8_t>&& prgRom, 
 		std::vector<uint8_t>&& chrRom, 
-		std::function<std::shared_ptr<Mapper>(std::shared_ptr<Rom>)> mapper)
+		std::function<NonNullSharedPtr<Mapper>(NonNullSharedPtr<Rom>)> mapper) :
+		m_rom{std::make_shared<Rom>(std::move(trainer), std::move(prgRom), std::move(chrRom))},
+		m_mapper{mapper(m_rom)}
 	{
-		m_rom = std::make_shared<Rom>(std::move(trainer), std::move(prgRom), std::move(chrRom));
-		m_mapper = mapper(m_rom);
+		
 	}
 };
 

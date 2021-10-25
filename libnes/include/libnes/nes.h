@@ -1,6 +1,7 @@
 #ifndef NES_H
 #define NES_H
 
+#include "libutilities/non_null.h"
 #include <array>
 #include <functional>
 #include <istream>
@@ -24,7 +25,7 @@ namespace LibNes
 class Nes
 {
 public:
-	Nes(std::shared_ptr<Screen> screen);
+	Nes(NonNullSharedPtr<Screen> screen);
 
 	void loadCartridge(std::istream& romStream);
 	void runFor(std::chrono::nanoseconds time
@@ -35,24 +36,24 @@ public:
 	void reset();
 
 private:
-	std::shared_ptr<std::vector<uint8_t>> m_ram;
+	NonNullSharedPtr<std::vector<uint8_t>> m_ram;
 	static constexpr size_t ramSize{0x800};
 
-	std::unique_ptr<Cartridge> m_cartridge;
+	std::optional<NonNullUniquePtr<Cartridge>> m_cartridge;
 	
 	const std::vector<
 		std::function<
-			std::shared_ptr<Mapper>(
-				std::shared_ptr<Cartridge::Rom>, 
+			NonNullSharedPtr<Mapper>(
+				NonNullSharedPtr<Cartridge::Rom>, 
 				Mapper::Mirroring)>> m_mapperList
 	{
-		[&](std::shared_ptr<Cartridge::Rom> rom, Mapper::Mirroring mirroring) { return std::make_shared<NRom>(rom, mirroring); }
+		[&](NonNullSharedPtr<Cartridge::Rom> rom, Mapper::Mirroring mirroring) { return std::make_shared<NRom>(rom, mirroring); }
 	};
 
-	std::shared_ptr<CpuMemory> m_cpuMemory;
-	std::unique_ptr<LibMos6502::Mos6502> m_cpu;
+	NonNullSharedPtr<CpuMemory> m_cpuMemory;
+	NonNullUniquePtr<LibMos6502::Mos6502> m_cpu;
 	static constexpr std::chrono::nanoseconds cpuCycleTime{static_cast<uint16_t>(1000000000. / 1790000)}; // 1/(1.79 MHz)
-	std::unique_ptr<Ricoh2C02> m_ppu;
+	NonNullUniquePtr<Ricoh2C02> m_ppu;
 };
 
 } // namespace LibNes

@@ -1,10 +1,12 @@
+#include <cassert>
+
 #include "libnes/cpu_memory.h"
 
 namespace LibNes
 {
 
-CpuMemory::CpuMemory(std::shared_ptr<std::vector<uint8_t>> ram) :
-	m_ram{ram}, m_mapper{nullptr}
+CpuMemory::CpuMemory(NonNullSharedPtr<std::vector<uint8_t>> ram) :
+	m_ram{ram}, m_mapper{}
 {
 
 }
@@ -35,7 +37,8 @@ uint8_t CpuMemory::read(uint16_t addr)
 
 	else if (addr <= 0xFFFF) // Cartridge space
 	{
-		data = m_mapper->read(addr);
+		assert(m_mapper);
+		data = (*m_mapper)->read(addr);
 	}
 
 	return data;
@@ -65,11 +68,12 @@ void CpuMemory::write(uint16_t addr, uint8_t data)
 
 	else // Cartridge space
 	{
-		m_mapper->write(addr, data);
+		assert(m_mapper);
+		(*m_mapper)->write(addr, data);
 	}
 }
 
-void CpuMemory::setMapper(std::shared_ptr<Mapper> mapper)
+void CpuMemory::setMapper(NonNullSharedPtr<Mapper> mapper)
 {
 	m_mapper = mapper;
 }

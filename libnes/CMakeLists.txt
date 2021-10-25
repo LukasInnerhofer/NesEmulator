@@ -20,8 +20,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 
 get_target_property(LIBMOS6502_INCLUDE libmos6502 INCLUDE_DIRECTORIES)
 get_target_property(LIBMOS6502_DEFINITIONS libmos6502 COMPILE_DEFINITIONS)
+get_target_property(LIBUTILITIES_INCLUDE_DIRECTORIES libutilities INCLUDE_DIRECTORIES)
 target_include_directories(${PROJECT_NAME} PRIVATE ${LIBMOS6502_INCLUDE})
 target_compile_definitions(${PROJECT_NAME} PRIVATE ${LIBMOS6502_DEFINITIONS})
+target_include_directories(${PROJECT_NAME} PRIVATE ${LIBUTILITIES_INCLUDE_DIRECTORIES})
 
 if(LOG)
     target_compile_definitions(${PROJECT_NAME} PUBLIC LIB_NES_LOG)
