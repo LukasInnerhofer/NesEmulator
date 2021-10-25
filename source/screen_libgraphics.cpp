@@ -18,6 +18,11 @@ ScreenLibGraphics::ScreenLibGraphics(std::shared_ptr<LibGraphics::Window> window
     
 }
 
+void ScreenLibGraphics::draw()
+{
+    m_window->draw(m_rectangle);
+}
+
 void ScreenLibGraphics::draw(LibNes::Screen::Pixel const &pixel)
 {
     m_texture->setPixel(

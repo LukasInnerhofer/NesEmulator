@@ -17,10 +17,9 @@ int main(int argc, char* argv[])
 	}
 	std::string filePath{argv[1]};
 
-	LibNes::Nes nes{
-		std::make_shared<NesEmulator::ScreenLibGraphics>(
-			std::make_shared<LibGraphics::Window>("NesEmulator")
-		)};
+	std::shared_ptr<LibGraphics::Window> window{std::make_shared<LibGraphics::Window>("NesEmulator")};
+	std::shared_ptr<NesEmulator::ScreenLibGraphics> screen{std::make_shared<NesEmulator::ScreenLibGraphics>(window)};
+	LibNes::Nes nes{screen};
 
 	std::ifstream file{filePath, std::ios::in | std::ios::binary | std::ios::ate};
 
@@ -33,28 +32,31 @@ int main(int argc, char* argv[])
 	nes.loadCartridge(file);
 	nes.reset();
 
-	std::atomic<bool> loop{true};
-	std::thread uiThread{[&]()
-	{ 
-		std::cout << "Running...\n Press return to exit.\n";
-		std::cin.get(); 
-		loop = false; 
-	}};
-
 #if defined(NES_EMULATOR_LOG)
 	auto log = std::ofstream("nes.log");
 #endif
 
-	while (loop)
+	LibGraphics::Window::Event event;
+	while (window)
 	{
 		nes.runFor(std::chrono::milliseconds(16)
 #if defined(NES_EMULATOR_LOG)
 			, log
 #endif
 		);
-	}
 
-	uiThread.join();
+		screen->draw();
+		window->display();
+		if (window->pollEvent(event))
+		{
+			switch(event.type)
+			{
+			case LibGraphics::Window::EventType::Closed:
+				window = nullptr;
+				break;
+			}
+		}
+	}
 
 	return EXIT_SUCCESS;
 }

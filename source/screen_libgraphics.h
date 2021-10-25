@@ -14,6 +14,7 @@ public:
     ScreenLibGraphics() = delete;
     ScreenLibGraphics(std::shared_ptr<LibGraphics::Window> window);
 
+    void draw();
     void draw(LibNes::Screen::Pixel const &pixel) override;
 
 private:
