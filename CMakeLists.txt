@@ -10,10 +10,6 @@ add_executable(
     source/screen_libgraphics.h
     source/screen_libgraphics.cpp)
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-    set(PLATFORM "linux")
-endif()
-
 set(INSTALL_PATH bin/${PROJECT_NAME})
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${INSTALL_PATH})
 
@@ -41,7 +37,7 @@ endif()
 target_link_libraries(${PROJECT_NAME} libnes)
 target_link_libraries(${PROJECT_NAME} libgraphics)
 
-if(${PLATFORM} STREQUAL "linux")
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     target_link_libraries(${PROJECT_NAME} pthread GL X11)
 endif()
 
