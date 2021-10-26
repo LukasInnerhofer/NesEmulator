@@ -7,7 +7,8 @@ namespace NesEmulator
 ScreenLibGraphics::ScreenLibGraphics(std::shared_ptr<LibGraphics::Window> window) :
     m_texture{
         new LibGraphics::Texture(
-            std::vector<uint8_t>(340 * 260 * 3), LibGraphics::Texture::SizeVector{340, 260})},
+            std::vector<uint8_t>(width * height * LibGraphics::Texture::bytesPerPixel), 
+            LibGraphics::Texture::SizeVector{width, height})},
     m_rectangle{
         LibGraphics::Vector<float>{-1.0f,-1.0f},
         LibGraphics::Vector<float>{2.0f,2.0f},

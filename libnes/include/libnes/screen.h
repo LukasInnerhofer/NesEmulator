@@ -8,6 +8,9 @@ namespace LibNes
 class Screen
 {
 public:
+    size_t constexpr static width = 256;
+    size_t constexpr static height = 240;
+
     typedef struct
     {
         typedef struct
