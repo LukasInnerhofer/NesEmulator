@@ -4,15 +4,17 @@
 namespace NesEmulator
 {
 
-ScreenLibGraphics::ScreenLibGraphics(std::shared_ptr<LibGraphics::Window> window) :
+using namespace LibGraphics;
+
+ScreenLibGraphics::ScreenLibGraphics(NonNullSharedPtr<Window> window) :
     m_texture{
-        new LibGraphics::Texture(
-            std::vector<uint8_t>(width * height * LibGraphics::Texture::bytesPerPixel), 
-            LibGraphics::Texture::SizeVector{width, height})},
+        makeNonNullShared<Texture>(
+            std::vector<uint8_t>(width * height * Texture::bytesPerPixel), 
+            Texture::SizeVector{width, height})},
     m_rectangle{
-        LibGraphics::Vector<float>{-1.0f,-1.0f},
-        LibGraphics::Vector<float>{2.0f,2.0f},
-        LibGraphics::Color{0, 0, 0},
+        Vector<float>{-1.0f,-1.0f},
+        Vector<float>{2.0f,2.0f},
+        Color{0, 0, 0},
         m_texture},
     m_window{window}
 {
@@ -27,8 +29,8 @@ void ScreenLibGraphics::draw()
 void ScreenLibGraphics::draw(LibNes::Screen::Pixel const &pixel)
 {
     m_texture->setPixel(
-        LibGraphics::Texture::PositionVector{pixel.position.x, pixel.position.y}, 
-        LibGraphics::Color{pixel.color.r, pixel.color.g, pixel.color.b});
+        Texture::PositionVector{pixel.position.x, pixel.position.y}, 
+        Color{pixel.color.r, pixel.color.g, pixel.color.b});
 }
 
 }
