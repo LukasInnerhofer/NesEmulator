@@ -11,20 +11,20 @@ public:
     size_t constexpr static width = 256;
     size_t constexpr static height = 240;
 
-    typedef struct
+    struct Pixel
     {
-        typedef struct
+        struct Color
         {
             uint8_t r, g, b;
-        } Color;
+        };
         Color color;
 
-        typedef struct
+        struct Position
         {
             uint16_t x, y;
-        } Position;
+        };
         Position position;
-    } Pixel;
+    };
     
     virtual void draw(Pixel const &pixel) = 0;
 };
