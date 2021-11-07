@@ -3,12 +3,11 @@
 namespace LibNes
 {
 
-Ricoh2C02::Ricoh2C02(std::shared_ptr<Screen> screen) : 
+Ricoh2C02::Ricoh2C02(NonNullSharedPtr<Screen> screen) : 
     m_scanline{scanlineDefault},
     m_cycle{cycleDefault},
     m_screen{screen}
 {
-
 }
 
 void Ricoh2C02::step()
