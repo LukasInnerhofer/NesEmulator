@@ -38,7 +38,7 @@ uint8_t CpuMemory::read(uint16_t addr)
 	else if (addr <= 0xFFFF) // Cartridge space
 	{
 		assert(m_mapper);
-		data = (*m_mapper)->read(addr);
+		data = m_mapper.value()->read(addr);
 	}
 
 	return data;
@@ -69,7 +69,7 @@ void CpuMemory::write(uint16_t addr, uint8_t data)
 	else // Cartridge space
 	{
 		assert(m_mapper);
-		(*m_mapper)->write(addr, data);
+		m_mapper.value()->write(addr, data);
 	}
 }
 
