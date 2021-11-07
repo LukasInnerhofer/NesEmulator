@@ -34,7 +34,7 @@ if(${LIBNES_DEFINITIONS})
 endif()
 target_include_directories(${PROJECT_NAME} PRIVATE ${LIBGRAPHICS_INCLUDE_DIRECTORIES})
 
-if(LOG)
+if(NES_EMULATOR_LOG)
     target_compile_definitions(${PROJECT_NAME} PRIVATE NES_EMULATOR_LOG)
 endif()
 
@@ -45,4 +45,4 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     target_link_libraries(${PROJECT_NAME} pthread GL X11)
 endif()
 
-option(LOG "Enable logging to file" OFF)
+option(NES_EMULATOR_LOG "Enable logging to file" OFF)
