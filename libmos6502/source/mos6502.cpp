@@ -34,7 +34,7 @@ void Mos6502::reset()
 }
 
 void Mos6502::step(
-#if defined(LIB_MOS6502_LOG)
+#if defined(LIBMOS6502_LOG)
 	std::ofstream& log
 #endif
 )
@@ -45,7 +45,7 @@ void Mos6502::step(
 
 	const Instruction instruction{m_instructions[opCode]};
 
-#if defined(LIB_MOS6502_LOG)
+#if defined(LIBMOS6502_LOG)
 	log << std::hex << std::setfill('0') << std::setw(4) << std::right << std::uppercase << 
 		m_pc << " " << std::setw(2) << static_cast<int>(opCode) << " " <<
 		instruction.m_name << " " <<

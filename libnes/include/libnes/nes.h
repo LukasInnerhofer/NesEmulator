@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#if defined(LIB_NES_LOG)
+#if defined(LIBNES_LOG)
 #include <fstream>
 #endif
 
@@ -29,7 +29,7 @@ public:
 
 	void loadCartridge(std::istream& romStream);
 	void runFor(std::chrono::nanoseconds time
-#if defined(LIB_NES_LOG)
+#if defined(LIBNES_LOG)
 		, std::ofstream& log
 #endif
 	);

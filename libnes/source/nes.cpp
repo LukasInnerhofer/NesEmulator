@@ -2,6 +2,8 @@
 #include <iomanip>
 #include <thread>
 
+#include <iostream>
+
 #include "libnes/nes.h"
 #include "libnes/cpu_memory.h"
 
@@ -99,14 +101,14 @@ void Nes::reset()
 }
 
 void Nes::runFor(std::chrono::nanoseconds time
-#if defined(LIB_NES_LOG)
+#if defined(LIBNES_LOG)
 	, std::ofstream& log
 #endif
 )
 {
 	const std::chrono::time_point start = std::chrono::steady_clock::now();
 
-#if defined(LIB_NES_LOG)
+#if defined(LIBNES_LOG)
 	uint16_t lastCycle;
 	int16_t lastScanline;
 #endif
@@ -114,12 +116,12 @@ void Nes::runFor(std::chrono::nanoseconds time
 	for(int64_t iterator{time / cpuCycleTime}; iterator > 0; iterator -= m_cpu->getCycles())
 	{
 		m_cpu->step(
-#if defined(LIB_NES_LOG)
+#if defined(LIBNES_LOG)
 			log
 #endif
 		);
 
-#if defined(LIB_NES_LOG)
+#if defined(LIBNES_LOG)
 		lastCycle = m_ppu->getCycle();
 		lastScanline = m_ppu->getScanline();
 #endif
@@ -129,7 +131,7 @@ void Nes::runFor(std::chrono::nanoseconds time
 			m_ppu->step();
 		}
 
-#if defined(LIB_NES_LOG)
+#if defined(LIBNES_LOG)
 		log << 
 			" CYC:" << std::setw(3) << std::setfill(' ') << std::right << std::dec << lastCycle << 
 			" SL:" << std::left << lastScanline << "\n";

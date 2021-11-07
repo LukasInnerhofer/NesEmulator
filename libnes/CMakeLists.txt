@@ -28,7 +28,7 @@ endif()
 target_include_directories(${PROJECT_NAME} PRIVATE ${LIBUTILITIES_INCLUDE_DIRECTORIES})
 
 if(LOG)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC LIB_NES_LOG)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC LIBNES_LOG)
 endif()
 
 target_link_libraries(${PROJECT_NAME} libmos6502)

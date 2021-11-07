@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-#if defined(LIB_MOS6502_LOG)
+#if defined(LIBMOS6502_LOG)
 #include <fstream>
 #endif
 
@@ -26,7 +26,7 @@ public:
 
 	void reset();
 	void step(
-#if defined(LIB_MOS6502_LOG)
+#if defined(LIBMOS6502_LOG)
 		std::ofstream& log
 #endif
 	);
@@ -170,16 +170,16 @@ private:
 	{
 		void(Mos6502::* m_instruction)();
 		AddressMode m_addressMode;
-#if defined(LIB_MOS6502_LOG)
+#if defined(LIBMOS6502_LOG)
 		std::string m_name;
 #endif
 	} Instruction;
 
-#if defined(LIB_MOS6502_LOG)
+#if defined(LIBMOS6502_LOG)
 #define I(instruction, addressMode) { &Mos6502::instruction, AddressMode::addressMode, #instruction }
 #else
 #define I(instruction, addressMode) { &Mos6502::instruction, AddressMode::addressMode }
-#endif // defined(LIB_MOS6502_LOG)
+#endif // defined(LIBMOS6502_LOG)
 	std::vector<Instruction> m_instructions
 	{
 		I(ILL, Ill), // 0x00
