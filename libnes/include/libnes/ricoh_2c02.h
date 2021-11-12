@@ -3,7 +3,9 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
 
+#include "libnes/mapper.h"
 #include "libnes/screen.h"
 #include "libutilities/non_null.h"
 
@@ -19,10 +21,19 @@ public:
     uint16_t getCycle();
     int16_t getScanline();
 
+    void setMapper(NonNullSharedPtr<Mapper> mapper);
+
+    uint8_t read(uint16_t address) const;
+    void write(uint16_t address, uint8_t data);
+
 private:
     int16_t m_scanline;
     uint16_t m_cycle;
     NonNullSharedPtr<Screen> m_screen;
+    std::optional<NonNullSharedPtr<Mapper>> m_mapper;
+
+    std::vector<uint8_t> m_objectAttributeMemory;
+    static constexpr size_t objectAttributeMemorySize{256};
 
     static constexpr int16_t scanlineDefault{241};
     static constexpr uint16_t cycleDefault{0};
