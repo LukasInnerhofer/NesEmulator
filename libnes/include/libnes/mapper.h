@@ -5,8 +5,13 @@
 
 #include "cartridge.h"
 
+#include "libutilities/badge.h"
+
 namespace LibNes
 {
+
+class CpuMemory;
+class Ricoh2C02;
 
 class Mapper
 {
@@ -15,8 +20,21 @@ public:
 
 	Mapper(NonNullSharedPtr<Cartridge::Rom> rom, const Mirroring& mirroring);
 
-	virtual uint8_t read(uint16_t addr) = 0;
-	virtual void write(uint16_t addr, uint8_t data) = 0;
+	virtual uint8_t read(
+		uint16_t address, 
+		Badge<CpuMemory>) = 0;
+	virtual void write(
+		uint16_t address, 
+		uint8_t data, 
+		Badge<CpuMemory>) = 0;
+
+	virtual uint8_t read(
+		uint16_t address, 
+		Badge<Ricoh2C02>) = 0;
+	virtual void write(
+		uint16_t address, 
+		uint8_t data, 
+		Badge<Ricoh2C02>) = 0;
 
 protected:
 	Mirroring m_mirroring;

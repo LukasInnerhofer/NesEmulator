@@ -6,15 +6,18 @@
 
 #include "libnes/nes.h"
 #include "libnes/cpu_memory.h"
+#include "libutilities/non_null.h"
 
 namespace LibNes
 {
 
 Nes::Nes(NonNullSharedPtr<Screen> screen) :
-	m_ram{std::make_shared<std::vector<uint8_t>>(ramSize)},
-	m_cpuMemory{std::make_shared<CpuMemory>(m_ram)},
-	m_cpu{std::make_unique<LibMos6502::Mos6502>(NonNullSharedPtr<LibMos6502::Memory>{m_cpuMemory})},
-	m_ppu{std::make_unique<Ricoh2C02>(screen)},
+	m_ram{makeNonNullShared<std::vector<uint8_t>>(ramSize)},
+	m_cpuMemory{makeNonNullShared<CpuMemory>(m_ram)},
+	m_cpu{makeNonNullUnique<LibMos6502::Mos6502>(
+		NonNullSharedPtr<LibMos6502::Memory>{m_cpuMemory})},
+	m_vram{makeNonNullShared<std::vector<uint8_t>>(vramSize)},
+	m_ppu{makeNonNullUnique<Ricoh2C02>(screen, m_vram)},
 	m_cartridge{}
 {
 
@@ -92,7 +95,8 @@ void Nes::loadCartridge(std::istream& romStream)
 		std::move(prgRom), 
 		std::move(chrRom), 
 		[&](NonNullSharedPtr<Cartridge::Rom> rom) { return m_mapperList[mapperNumber](rom, mirroring); }));
-	m_cpuMemory->setMapper((*m_cartridge)->m_mapper);
+	m_cpuMemory->setMapper(m_cartridge.value()->m_mapper);
+	m_ppu->setMapper(m_cartridge.value()->m_mapper);
 }
 
 void Nes::reset()

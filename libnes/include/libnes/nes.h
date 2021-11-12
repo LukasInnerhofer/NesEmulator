@@ -38,6 +38,8 @@ public:
 private:
 	NonNullSharedPtr<std::vector<uint8_t>> m_ram;
 	static constexpr size_t ramSize{0x800};
+	NonNullSharedPtr<std::vector<uint8_t>> m_vram;
+	static constexpr size_t vramSize{0x800};
 
 	std::optional<NonNullUniquePtr<Cartridge>> m_cartridge;
 	
