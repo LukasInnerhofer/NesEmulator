@@ -18,8 +18,8 @@ class CpuMemory : public LibMos6502::Memory
 public:
 	CpuMemory(NonNullSharedPtr<std::vector<uint8_t>> ram);
 
-	uint8_t read(uint16_t addr) override;
-	void write(uint16_t addr, uint8_t data) override;
+	uint8_t read(uint16_t address) override;
+	void write(uint16_t address, uint8_t data) override;
 
 	void setMapper(NonNullSharedPtr<Mapper> mapper);
 
